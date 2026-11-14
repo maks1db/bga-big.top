@@ -1,6 +1,12 @@
 #bigtop-game {
-    color: #2d2118;
+    background: #24100f url('img/arena-background.webp') center top / 100% auto no-repeat;
+    border: 1px solid #9d7138;
+    box-shadow: inset 0 0 45px #10050980;
+    box-sizing: border-box;
+    color: #f8e7bd;
     font-family: Arial, sans-serif;
+    min-height: 720px;
+    padding: 8px 12px 16px;
 }
 
 #bigtop-common {
@@ -20,7 +26,17 @@
 .bigtop-common-section h3,
 .bigtop-player-table h3,
 #bigtop-hand-area h3 {
+    color: #ffe9b5;
     margin: 6px 0;
+    text-shadow: 0 2px 3px #000;
+}
+
+.bigtop-common-section h3 {
+    background: #240c0dbf;
+    border: 1px solid #c69953;
+    border-radius: 16px;
+    display: inline-block;
+    padding: 4px 14px;
 }
 
 .bigtop-card {
@@ -44,14 +60,21 @@
 }
 
 .bigtop-player-table {
-    border-top: 1px solid #8f795f;
-    padding: 8px 0;
+    background: #1c0b0dd9;
+    border: 1px solid #a67b40;
+    border-radius: 8px;
+    box-shadow: 0 3px 12px #0006;
+    margin-top: 10px;
+    padding: 8px 12px;
 }
 
 #bigtop-hand-area {
-    border-top: 2px solid #8f795f;
+    background: #1c0b0de6;
+    border: 1px solid #c69953;
+    border-radius: 8px;
+    box-shadow: 0 3px 12px #0006;
     margin-top: 16px;
-    padding-top: 8px;
+    padding: 8px 12px 12px;
     text-align: center;
 }
 
@@ -64,6 +87,30 @@
 
 html[data-theme="dark"] #bigtop-game {
     color: #f1e8db;
+}
+
+@media (min-width: 1000px) {
+    #bigtop-common {
+        display: block;
+        min-height: 600px;
+        position: relative;
+    }
+
+    #bigtop-deck {
+        left: 3%;
+        position: absolute;
+        top: 90px;
+    }
+
+    #bigtop-auction-area {
+        padding-top: 22%;
+    }
+
+    #bigtop-bank-area {
+        position: absolute;
+        right: 6%;
+        top: 100px;
+    }
 }
 
 @media (max-width: 740px) {

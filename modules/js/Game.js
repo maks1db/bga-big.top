@@ -184,7 +184,7 @@ export class Game {
                         <div id="bigtop-deck-card"></div>
                         <div class="bigtop-deck-count">${_('Cards')}: <span id="bigtop-deck-count"></span></div>
                     </div>
-                    <div class="bigtop-common-section">
+                    <div id="bigtop-auction-area" class="bigtop-common-section">
                         <h3>${_('Current auction')}</h3>
                         <div id="bigtop-auction"></div>
                         <div id="bigtop-current-bid"></div>
@@ -192,7 +192,7 @@ export class Game {
                             <input id="bigtop-bid-input" type="number" step="1" aria-label="${_('Your bid')}">
                         </div>
                     </div>
-                    <div class="bigtop-common-section">
+                    <div id="bigtop-bank-area" class="bigtop-common-section">
                         <h3>${_('Bank')}</h3>
                         <div class="bigtop-bank"><span id="bigtop-bank-counter"></span> $</div>
                     </div>
