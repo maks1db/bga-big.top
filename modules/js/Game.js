@@ -40,11 +40,8 @@ class PlayerTurn {
 
     onLeavingState() {
         this.game.handSelectionActive = false;
-        this.game.auctionConfirmationPending = false;
+        this.game.clearAuctionSelection();
         document.getElementById('bigtop-hand-area').classList.remove('bigtop-selectable');
-        document.querySelectorAll('#bigtop-hand .bigtop-card-auction-selected').forEach(card => {
-            card.classList.remove('bigtop-card-auction-selected');
-        });
     }
 }
 
@@ -173,6 +170,7 @@ export class Game {
         this.moneyCounters = {};
         this.handSelectionActive = false;
         this.auctionConfirmationPending = false;
+        this.selectedAuctionCard = null;
         this.coinMode = null;
         this.placeable = {};
     }
@@ -292,7 +290,7 @@ export class Game {
                         <h3 class="bigtop-completed-heading">
                             <button class="bigtop-completed-toggle" type="button" data-player-id="${playerId}" aria-expanded="false" aria-controls="bigtop-completed-content-${playerId}">
                                 <span>${_('Completed')} (<span id="bigtop-completed-count-${playerId}">0</span>)</span>
-                                <span class="bigtop-completed-arrow" aria-hidden="true">⌄</span>
+                                <span class="bigtop-completed-arrow" aria-hidden="true"></span>
                             </button>
                         </h3>
                         <div class="bigtop-completed-content" id="bigtop-completed-content-${playerId}" hidden>
@@ -385,7 +383,9 @@ export class Game {
     updatePlayerSliderHeight() {
         const table = document.getElementById(`bigtop-player-table-${this.visiblePlayerId}`);
         if (table) {
-            document.getElementById('bigtop-player-track').style.height = `${table.offsetHeight}px`;
+            const style = window.getComputedStyle(table);
+            const verticalMargins = parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+            document.getElementById('bigtop-player-track').style.height = `${table.offsetHeight + verticalMargins}px`;
         }
     }
 
@@ -578,30 +578,39 @@ export class Game {
     }
 
     onHandClick(event) {
-        if (!this.handSelectionActive || this.auctionConfirmationPending) {
+        if (!this.handSelectionActive) {
             return;
         }
         const card = event.target.closest('[data-card-id]');
         if (!card) {
             return;
         }
+        if (this.selectedAuctionCard === card) {
+            this.clearAuctionSelection();
+            this.bga.statusBar.setTitle(_('${you} must choose an attraction to auction'));
+            return;
+        }
 
+        this.clearAuctionSelection();
         this.auctionConfirmationPending = true;
+        this.selectedAuctionCard = card;
         card.classList.add('bigtop-card-auction-selected');
         this.bga.statusBar.setTitle(_('Do you really want to send this card to auction?'));
-        const clearSelection = () => {
-            this.auctionConfirmationPending = false;
-            card.classList.remove('bigtop-card-auction-selected');
-            this.bga.statusBar.removeActionButtons();
-        };
         this.bga.statusBar.addActionButton(_('Confirm auction'), () => {
-            clearSelection();
+            this.clearAuctionSelection();
             this.bga.actions.performAction('actAuctionCard', { cardId: Number(card.dataset.cardId) });
         });
         this.bga.statusBar.addActionButton(_('Cancel'), () => {
-            clearSelection();
+            this.clearAuctionSelection();
             this.bga.statusBar.setTitle(_('${you} must choose an attraction to auction'));
         }, { color: 'secondary' });
+    }
+
+    clearAuctionSelection() {
+        this.auctionConfirmationPending = false;
+        this.selectedAuctionCard?.classList.remove('bigtop-card-auction-selected');
+        this.selectedAuctionCard = null;
+        this.bga.statusBar.removeActionButtons();
     }
 
     onCoinSlotClick(event) {

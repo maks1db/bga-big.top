@@ -382,10 +382,21 @@ body,
 }
 
 .bigtop-completed-arrow {
-    display: inline-block;
-    font-size: 20px;
-    line-height: 14px;
+    align-items: center;
+    display: inline-flex;
+    height: 14px;
+    justify-content: center;
     transition: transform 250ms ease;
+    width: 12px;
+}
+
+.bigtop-completed-arrow::before {
+    border-bottom: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    content: '';
+    height: 8px;
+    transform: translateY(-2px) rotate(45deg);
+    width: 8px;
 }
 
 .bigtop-completed-area.bigtop-expanded .bigtop-completed-arrow {
@@ -397,7 +408,9 @@ body,
 }
 
 .bigtop-completed-content[hidden] {
-    display: none;
+    display: block;
+    min-height: 252px;
+    visibility: hidden;
 }
 
 .bigtop-completed-animating {
