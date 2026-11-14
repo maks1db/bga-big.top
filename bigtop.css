@@ -1,3 +1,15 @@
+html,
+body,
+#page-content {
+    background-attachment: fixed !important;
+    background-color: #16090d !important;
+    background-image:
+        radial-gradient(ellipse at 50% -20%, #c58d4138, transparent 60%),
+        repeating-conic-gradient(from 180deg at 50% -32%, #2a0c14 0deg 7.5deg, #54202a 7.5deg 15deg) !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+}
+
 #bigtop-game {
     --bigtop-ink-2: oklch(0.11 0.015 50);
     --bigtop-crimson: oklch(0.44 0.15 27);
