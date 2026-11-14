@@ -396,6 +396,31 @@ body,
     margin-top: 8px;
 }
 
+.bigtop-bank {
+    align-items: center;
+    display: flex;
+    font-size: 24px;
+    gap: 8px;
+    justify-content: center;
+}
+
+.bigtop-bank-coin {
+    animation: bigtop-bank-coin-spin 3.5s linear infinite;
+    background-image: url('img/elements-50.png');
+    background-position: 100% 100%;
+    background-repeat: no-repeat;
+    background-size: 300% 200%;
+    display: inline-block;
+    height: 32px;
+    transform-style: preserve-3d;
+    width: 32px;
+}
+
+@keyframes bigtop-bank-coin-spin {
+    from { transform: rotateY(0deg); }
+    to { transform: rotateY(360deg); }
+}
+
 html[data-theme="dark"] #bigtop-game {
     color: #f1e8db;
 }
@@ -403,7 +428,8 @@ html[data-theme="dark"] #bigtop-game {
 @media (prefers-reduced-motion: reduce) {
     .bigtop-bulb,
     .bigtop-beam,
-    .bigtop-dust {
+    .bigtop-dust,
+    .bigtop-bank-coin {
         animation: none !important;
     }
 

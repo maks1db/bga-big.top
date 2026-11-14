@@ -217,7 +217,7 @@ export class Game {
                     </div>
                     <div id="bigtop-bank-area" class="bigtop-common-section">
                         <h3>${_('Bank')}</h3>
-                        <div class="bigtop-bank"><span id="bigtop-bank-counter"></span></div>
+                        <div class="bigtop-bank"><span id="bigtop-bank-counter"></span><span class="bigtop-bank-coin" role="img" aria-label="${_('Coins')}"></span></div>
                     </div>
                 </div>
                 <div id="bigtop-hand-area">
@@ -250,7 +250,7 @@ export class Game {
             const playerId = Number(player.id);
             if (player.money !== undefined) {
                 this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `
-                    <span id="bigtop-money-counter-${playerId}"></span> <span class="bigtop-money-icon" role="img" aria-label="${_('Coins')}"></span>
+                    <span class="bigtop-player-bank">${_('Bank')}: <span id="bigtop-money-counter-${playerId}"></span> <span class="bigtop-money-icon" role="img" aria-label="${_('Coins')}"></span></span>
                 `);
                 const counter = new ebg.counter();
                 counter.create(`bigtop-money-counter-${playerId}`, {
@@ -373,76 +373,24 @@ export class Game {
         bidValue.dataset.value = this.clampBid(value);
         this.updateBidStepper();
         if (this.bidValue !== previousValue) {
-            this.animateBidValue();
+            this.animateBidValue(this.bidValue > previousValue ? 1 : -1);
         }
     }
 
-    animateBidValue() {
+    animateBidValue(direction) {
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             return;
         }
         const bidValue = document.getElementById('bigtop-bid-value');
-        const effects = [
-            {
-                duration: 620,
-                keyframes: [
-                    { transform: 'scale(1) rotate(0deg)', filter: 'brightness(1)', opacity: 1 },
-                    { transform: 'scale(1.75) rotate(-12deg)', filter: 'brightness(2.2)', opacity: 0.35, offset: 0.38 },
-                    { transform: 'scale(0.82) rotate(7deg)', filter: 'brightness(1.4)', opacity: 1, offset: 0.68 },
-                    { transform: 'scale(1) rotate(0deg)', filter: 'brightness(1)', opacity: 1 },
-                ],
-            },
-            {
-                duration: 700,
-                keyframes: [
-                    { transform: 'rotate(0deg) scale(1)' },
-                    { transform: 'rotate(180deg) scale(1.45)' },
-                    { transform: 'rotate(360deg) scale(1)' },
-                ],
-            },
-            {
-                duration: 680,
-                keyframes: [
-                    { transform: 'perspective(300px) rotateX(0deg) scale(1)' },
-                    { transform: 'perspective(300px) rotateX(180deg) scale(1.3)' },
-                    { transform: 'perspective(300px) rotateX(360deg) scale(1)' },
-                ],
-            },
-            {
-                duration: 650,
-                keyframes: [
-                    { transform: 'translateY(0) scale(1)' },
-                    { transform: 'translateY(-24px) scale(1.25)', offset: 0.35 },
-                    { transform: 'translateY(0) scale(0.9)', offset: 0.58 },
-                    { transform: 'translateY(-9px) scale(1.08)', offset: 0.78 },
-                    { transform: 'translateY(0) scale(1)' },
-                ],
-            },
-            {
-                duration: 720,
-                keyframes: [
-                    { transform: 'skewX(0deg) scale(1)' },
-                    { transform: 'skewX(24deg) scale(1.35, 0.75)', offset: 0.25 },
-                    { transform: 'skewX(-18deg) scale(0.85, 1.25)', offset: 0.5 },
-                    { transform: 'skewX(8deg) scale(1.1, 0.92)', offset: 0.75 },
-                    { transform: 'skewX(0deg) scale(1)' },
-                ],
-            },
-            {
-                duration: 760,
-                keyframes: [
-                    { transform: 'translate(0, 0) rotate(0deg)' },
-                    { transform: 'translate(18px, -18px) rotate(24deg) scale(1.35)', offset: 0.3 },
-                    { transform: 'translate(-12px, 8px) rotate(-16deg) scale(0.9)', offset: 0.65 },
-                    { transform: 'translate(0, 0) rotate(0deg) scale(1)' },
-                ],
-            },
-        ];
+        const scale = direction > 0 ? 1.35 : 0.7;
         bidValue.getAnimations().forEach(animation => animation.cancel());
-        const effect = effects[Math.floor(Math.random() * effects.length)];
-        bidValue.animate(effect.keyframes, {
-            duration: effect.duration,
-            easing: 'ease-in-out',
+        bidValue.animate([
+            { transform: 'scale(1)' },
+            { transform: `scale(${scale})`, offset: 0.45 },
+            { transform: 'scale(1)' },
+        ], {
+            duration: 320,
+            easing: 'ease-out',
         });
     }
 
