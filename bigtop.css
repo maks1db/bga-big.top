@@ -462,7 +462,7 @@ html[data-theme="dark"] #bigtop-game {
 }
 
 .bigtop-money-icon {
-    background-image: url('img/elements.png');
+    background-image: url('img/elements-18.png');
     background-position: 100% 100%;
     background-repeat: no-repeat;
     background-size: 300% 200%;
@@ -509,7 +509,7 @@ html[data-theme="dark"] #bigtop-game {
 
 .bigtop-coin-slot.bigtop-covered {
     background-color: transparent;
-    background-image: url('img/elements.png');
+    background-image: url('img/elements-50.png');
     background-position: 100% 100%;
     background-repeat: no-repeat;
     background-size: 300% 200%;

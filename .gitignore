@@ -4,4 +4,6 @@ __pycache__/
 
 *.pdf
 img/*.png
+!img/elements-18.png
+!img/elements-50.png
 misc/*.md
