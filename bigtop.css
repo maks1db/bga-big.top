@@ -483,16 +483,22 @@ html[data-theme="dark"] #bigtop-game {
 
 @media (max-width: 999px) {
     #bigtop-common {
-        align-items: center;
-        flex-direction: column;
+        display: block;
+        min-height: 600px;
     }
 
     #bigtop-deck {
-        align-self: flex-start;
+        left: 3%;
+        position: absolute;
+        top: 90px;
     }
 
     #bigtop-auction-area {
-        align-self: center;
+        left: 50%;
+        padding-top: 40px;
+        position: absolute;
+        top: 90px;
+        transform: translateX(-50%);
     }
 }
 
@@ -514,7 +520,7 @@ html[data-theme="dark"] #bigtop-game {
 
     #bigtop-auction-area {
         left: 50%;
-        padding-top: 0;
+        padding-top: 40px;
         position: absolute;
         top: 90px;
         transform: translateX(-50%);

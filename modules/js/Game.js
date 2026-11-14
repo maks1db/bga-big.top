@@ -206,7 +206,6 @@ export class Game {
                         <div class="bigtop-deck-count">${_('Cards')}: <span id="bigtop-deck-count"></span></div>
                     </div>
                     <div id="bigtop-auction-area" class="bigtop-common-section" hidden>
-                        <h3>${_('Current auction')}</h3>
                         <div id="bigtop-auction"></div>
                         <div id="bigtop-current-bid"></div>
                         <div id="bigtop-bid-controls" hidden>
