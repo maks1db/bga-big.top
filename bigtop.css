@@ -487,7 +487,7 @@ html[data-theme="dark"] #bigtop-game {
 #bigtop-bid-controls:not([hidden]) {
     align-items: center;
     display: flex;
-    gap: 8px;
+    gap: 16px;
     justify-content: center;
     margin-top: 8px;
 }
@@ -554,6 +554,12 @@ html[data-theme="dark"] #bigtop-game {
     opacity: 0.75;
     vertical-align: -4px;
     width: 18px;
+}
+
+.bigtop-behind .bigtop-money-icon {
+    background-image: url('img/elements-50.png');
+    height: 36px;
+    width: 36px;
 }
 
 #bigtop-hand-area.bigtop-selectable .bigtop-card {
@@ -676,7 +682,7 @@ html[data-theme="dark"] #bigtop-game {
 .bigtop-behind {
     align-items: center;
     display: flex;
-    font-size: 20px;
+    font-size: 40px;
     font-weight: bold;
     gap: 4px;
     position: absolute;
