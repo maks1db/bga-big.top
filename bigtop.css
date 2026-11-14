@@ -390,16 +390,66 @@ html[data-theme="dark"] #bigtop-game {
 }
 
 #bigtop-bid-controls:not([hidden]) {
+    align-items: center;
     display: flex;
+    gap: 8px;
     justify-content: center;
     margin-top: 8px;
 }
 
+.bigtop-bid-step {
+    background: linear-gradient(#ffe7a0, #c89236);
+    border: 1px solid #6f4318;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px #0007;
+    color: #321708;
+    cursor: pointer;
+    font-size: 25px;
+    font-weight: bold;
+    height: 36px;
+    line-height: 30px;
+    padding: 0;
+    touch-action: manipulation;
+    width: 36px;
+}
+
+.bigtop-bid-step:disabled {
+    cursor: default;
+    filter: grayscale(0.8);
+    opacity: 0.4;
+}
+
+.notouch-device .bigtop-bid-step:not(:disabled):hover {
+    filter: brightness(1.15);
+    transform: translateY(-2px);
+}
+
+.bigtop-bid-step:not(:disabled):active {
+    box-shadow: 0 1px 2px #0007;
+    transform: translateY(1px);
+}
+
 #bigtop-bid-input {
+    appearance: textfield;
+    background: #fff5d6;
+    border: 2px solid #b47c2f;
+    border-radius: 8px;
     box-sizing: border-box;
-    font-size: 18px;
+    color: #351b0d;
+    font-size: 22px;
+    font-weight: bold;
+    height: 40px;
     max-width: 100px;
-    padding: 6px;
+    padding: 4px 6px;
+    text-align: center;
+    transform-origin: center;
+    width: 76px;
+}
+
+#bigtop-bid-input::-webkit-inner-spin-button,
+#bigtop-bid-input::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
 }
 
 #bigtop-hand-area.bigtop-selectable .bigtop-card {

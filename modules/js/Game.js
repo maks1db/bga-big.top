@@ -69,6 +69,7 @@ class Auction {
         input.min = args.minBid;
         input.max = maxBid;
         input.value = Math.min(args.minBid, maxBid);
+        this.game.updateBidStepper();
 
         if (args.minBid <= maxBid) {
             this.bga.statusBar.addActionButton(_('Bid'), () => {
@@ -209,7 +210,9 @@ export class Game {
                         <div id="bigtop-auction"></div>
                         <div id="bigtop-current-bid"></div>
                         <div id="bigtop-bid-controls" hidden>
+                            <button id="bigtop-bid-decrease" class="bigtop-bid-step" type="button" aria-label="${_('Decrease bid')}">−</button>
                             <input id="bigtop-bid-input" type="number" step="1" aria-label="${_('Your bid')}">
+                            <button id="bigtop-bid-increase" class="bigtop-bid-step" type="button" aria-label="${_('Increase bid')}">+</button>
                         </div>
                     </div>
                     <div id="bigtop-bank-area" class="bigtop-common-section">
@@ -227,6 +230,7 @@ export class Game {
         `);
 
         this.setupArena();
+        this.setupBidStepper();
         document.getElementById('bigtop-deck-card').appendChild(this.createCard({ id: 0, type: 0 }));
         document.getElementById('bigtop-deck-count').textContent = gamedatas.deckCount;
 
@@ -281,6 +285,113 @@ export class Game {
         document.getElementById('bigtop-player-tables').addEventListener('click', event => this.onCoinSlotClick(event));
         this.updateBehindMoney();
         this.bga.notifications.setupPromiseNotifications();
+    }
+
+    setupBidStepper() {
+        const input = document.getElementById('bigtop-bid-input');
+        document.getElementById('bigtop-bid-decrease').addEventListener('click', () => {
+            this.changeBid(Number(input.value) - 1);
+        });
+        document.getElementById('bigtop-bid-increase').addEventListener('click', () => {
+            this.changeBid(Number(input.value) + 1);
+        });
+        input.addEventListener('change', () => this.changeBid(Number(input.value)));
+    }
+
+    clampBid(value) {
+        const input = document.getElementById('bigtop-bid-input');
+        const min = Number(input.min);
+        const max = Number(input.max);
+        const normalized = Number.isFinite(value) ? Math.round(value) : min;
+        return Math.min(max, Math.max(min, normalized));
+    }
+
+    updateBidStepper() {
+        const input = document.getElementById('bigtop-bid-input');
+        const value = this.clampBid(Number(input.value));
+        input.value = value;
+        this.bidValue = value;
+        document.getElementById('bigtop-bid-decrease').disabled = value <= Number(input.min);
+        document.getElementById('bigtop-bid-increase').disabled = value >= Number(input.max);
+    }
+
+    changeBid(value) {
+        const input = document.getElementById('bigtop-bid-input');
+        const previousValue = this.bidValue ?? Number(input.value);
+        input.value = this.clampBid(value);
+        this.updateBidStepper();
+        if (this.bidValue !== previousValue) {
+            this.animateBidValue();
+        }
+    }
+
+    animateBidValue() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return;
+        }
+        const input = document.getElementById('bigtop-bid-input');
+        const effects = [
+            {
+                duration: 620,
+                keyframes: [
+                    { transform: 'scale(1) rotate(0deg)', filter: 'brightness(1)', opacity: 1 },
+                    { transform: 'scale(1.75) rotate(-12deg)', filter: 'brightness(2.2)', opacity: 0.35, offset: 0.38 },
+                    { transform: 'scale(0.82) rotate(7deg)', filter: 'brightness(1.4)', opacity: 1, offset: 0.68 },
+                    { transform: 'scale(1) rotate(0deg)', filter: 'brightness(1)', opacity: 1 },
+                ],
+            },
+            {
+                duration: 700,
+                keyframes: [
+                    { transform: 'rotate(0deg) scale(1)' },
+                    { transform: 'rotate(180deg) scale(1.45)' },
+                    { transform: 'rotate(360deg) scale(1)' },
+                ],
+            },
+            {
+                duration: 680,
+                keyframes: [
+                    { transform: 'perspective(300px) rotateX(0deg) scale(1)' },
+                    { transform: 'perspective(300px) rotateX(180deg) scale(1.3)' },
+                    { transform: 'perspective(300px) rotateX(360deg) scale(1)' },
+                ],
+            },
+            {
+                duration: 650,
+                keyframes: [
+                    { transform: 'translateY(0) scale(1)' },
+                    { transform: 'translateY(-24px) scale(1.25)', offset: 0.35 },
+                    { transform: 'translateY(0) scale(0.9)', offset: 0.58 },
+                    { transform: 'translateY(-9px) scale(1.08)', offset: 0.78 },
+                    { transform: 'translateY(0) scale(1)' },
+                ],
+            },
+            {
+                duration: 720,
+                keyframes: [
+                    { transform: 'skewX(0deg) scale(1)' },
+                    { transform: 'skewX(24deg) scale(1.35, 0.75)', offset: 0.25 },
+                    { transform: 'skewX(-18deg) scale(0.85, 1.25)', offset: 0.5 },
+                    { transform: 'skewX(8deg) scale(1.1, 0.92)', offset: 0.75 },
+                    { transform: 'skewX(0deg) scale(1)' },
+                ],
+            },
+            {
+                duration: 760,
+                keyframes: [
+                    { transform: 'translate(0, 0) rotate(0deg)' },
+                    { transform: 'translate(18px, -18px) rotate(24deg) scale(1.35)', offset: 0.3 },
+                    { transform: 'translate(-12px, 8px) rotate(-16deg) scale(0.9)', offset: 0.65 },
+                    { transform: 'translate(0, 0) rotate(0deg) scale(1)' },
+                ],
+            },
+        ];
+        input.getAnimations().forEach(animation => animation.cancel());
+        const effect = effects[Math.floor(Math.random() * effects.length)];
+        input.animate(effect.keyframes, {
+            duration: effect.duration,
+            easing: 'ease-in-out',
+        });
     }
 
     setupArena() {
