@@ -168,6 +168,7 @@ export class Game {
         this.bga.states.register('EffectCoins', new EffectCoins(this, bga));
         this.moneyCounters = {};
         this.handSelectionActive = false;
+        this.auctionConfirmationPending = false;
         this.coinMode = null;
         this.placeable = {};
     }
@@ -497,15 +498,27 @@ export class Game {
         }, { passive: true });
     }
 
-    onHandClick(event) {
-        if (!this.handSelectionActive) {
+    async onHandClick(event) {
+        if (!this.handSelectionActive || this.auctionConfirmationPending) {
             return;
         }
         const card = event.target.closest('[data-card-id]');
         if (!card) {
             return;
         }
-        this.bga.actions.performAction('actAuctionCard', { cardId: Number(card.dataset.cardId) });
+
+        this.auctionConfirmationPending = true;
+        card.classList.add('bigtop-card-auction-selected');
+        let confirmed = false;
+        try {
+            confirmed = await this.bga.dialogs.confirmation(_('Do you really want to send this card to auction?'));
+        } finally {
+            this.auctionConfirmationPending = false;
+            card.classList.remove('bigtop-card-auction-selected');
+        }
+        if (confirmed) {
+            this.bga.actions.performAction('actAuctionCard', { cardId: Number(card.dataset.cardId) });
+        }
     }
 
     onCoinSlotClick(event) {
@@ -691,11 +704,13 @@ export class Game {
         }
 
         const target = document.getElementById(targetId);
-        const animateFromHand = element.parentElement?.id === 'bigtop-hand'
-            && targetId === 'bigtop-auction'
+        const sourceId = element.parentElement?.id;
+        const animatedRoute = (sourceId === 'bigtop-hand' && targetId === 'bigtop-auction')
+            || (sourceId === 'bigtop-auction' && targetId.startsWith('bigtop-attractions-'));
+        const shouldAnimate = animatedRoute
             && this.bga.gameui.bgaAnimationsActive()
             && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (!animateFromHand) {
+        if (!shouldAnimate) {
             target.appendChild(element);
             return;
         }
@@ -826,9 +841,10 @@ export class Game {
     }
 
     notif_auctionWon(args) {
-        this.moveCard(args.card, `bigtop-attractions-${args.player_id}`);
+        const movement = this.moveCard(args.card, `bigtop-attractions-${args.player_id}`);
         this.updateAuctionVisibility();
         this.updateBehindMoney();
+        return movement;
     }
 
     notif_auctionDiscarded(args) {

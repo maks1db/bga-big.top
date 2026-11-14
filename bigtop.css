@@ -469,6 +469,10 @@ html[data-theme="dark"] #bigtop-game {
         transition: none;
     }
 
+    #bigtop-hand .bigtop-card-frame {
+        transition: none !important;
+    }
+
     .bigtop-card-frame.bigtop-card-coin-action .bigtop-card,
     .bigtop-coin-slot.bigtop-actionable:not(.bigtop-covered)::before {
         animation: none !important;
@@ -636,6 +640,22 @@ html[data-theme="dark"] #bigtop-game {
 .notouch-device #bigtop-hand-area.bigtop-selectable .bigtop-card:hover {
     outline-color: #ffe08a;
     transform: translateY(-4px);
+}
+
+#bigtop-hand .bigtop-card-frame {
+    transition: transform 160ms ease;
+}
+
+#bigtop-hand .bigtop-card-frame.bigtop-card-auction-selected {
+    transform: translateY(-12px);
+    z-index: 5;
+}
+
+#bigtop-hand .bigtop-card-frame.bigtop-card-auction-selected .bigtop-card {
+    background-origin: border-box;
+    border: 3px solid #f6cf67;
+    box-shadow: 0 0 18px #ffd76980;
+    box-sizing: border-box;
 }
 
 .bigtop-card-frame {

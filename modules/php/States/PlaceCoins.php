@@ -87,6 +87,9 @@ class PlaceCoins extends GameState
     public function actRemoveCoin(int $cardId, int $circleIndex, int $activePlayerId): string
     {
         $this->game->moveCoinToBehind($cardId, $circleIndex, $activePlayerId);
+        $placedCardIds = array_map('intval', $this->globals->get('placed_card_ids', []));
+        $placedCardIds = array_values(array_diff($placedCardIds, [$cardId]));
+        $this->globals->set('placed_card_ids', $placedCardIds);
         return PlaceCoins::class;
     }
 
