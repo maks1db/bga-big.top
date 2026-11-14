@@ -154,3 +154,36 @@ html[data-theme="dark"] #bigtop-game {
     font-weight: bold;
     margin-top: 10px;
 }
+
+.bigtop-element {
+    background-image: url('img/elements.png');
+    background-repeat: no-repeat;
+    display: inline-block;
+    flex: 0 0 256px;
+    height: 256px;
+    width: 256px;
+}
+
+.bigtop-star-award-3 {
+    background-position: 0 0;
+}
+
+.bigtop-star-award-7 {
+    background-position: -256px 0;
+}
+
+.bigtop-star-award-10 {
+    background-position: -512px 0;
+}
+
+.bigtop-auctioneer-token {
+    background-position: 0 -256px;
+}
+
+.bigtop-coin-5 {
+    background-position: -256px -256px;
+}
+
+.bigtop-coin-1 {
+    background-position: -512px -256px;
+}
