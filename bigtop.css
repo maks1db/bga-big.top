@@ -405,7 +405,6 @@ body,
 }
 
 .bigtop-bank-coin {
-    animation: bigtop-bank-coin-spin 3.5s linear infinite;
     opacity: 0.75;
     background-image: url('img/elements-50.png');
     background-position: 100% 100%;
@@ -417,11 +416,6 @@ body,
     width: 32px;
 }
 
-@keyframes bigtop-bank-coin-spin {
-    from { transform: rotateY(0deg); }
-    to { transform: rotateY(360deg); }
-}
-
 html[data-theme="dark"] #bigtop-game {
     color: #f1e8db;
 }
@@ -429,8 +423,7 @@ html[data-theme="dark"] #bigtop-game {
 @media (prefers-reduced-motion: reduce) {
     .bigtop-bulb,
     .bigtop-beam,
-    .bigtop-dust,
-    .bigtop-bank-coin {
+    .bigtop-dust {
         animation: none !important;
     }
 
@@ -574,6 +567,58 @@ html[data-theme="dark"] #bigtop-game {
     flex: 0 0 180px;
     position: relative;
     width: 180px;
+}
+
+.bigtop-card-help-icon {
+    align-items: center;
+    background: linear-gradient(#fff0ad, #c1852d);
+    border: 2px solid #fff1b8;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #6c3a16, 0 2px 6px #0008;
+    color: #3b1b0b;
+    display: flex;
+    font-family: Georgia, serif;
+    font-size: 17px;
+    font-weight: bold;
+    height: 24px;
+    justify-content: center;
+    pointer-events: none;
+    position: absolute;
+    right: -7px;
+    top: -7px;
+    width: 24px;
+    z-index: 4;
+}
+
+.bigtop-card-tooltip {
+    background: #1c0b0df5;
+    border: 1px solid #e0b75c;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px #000a;
+    color: #ffe9b5;
+    display: none;
+    font-size: 14px;
+    left: 50%;
+    line-height: 1.35;
+    max-width: 75vw;
+    padding: 8px 10px;
+    pointer-events: none;
+    position: absolute;
+    text-align: left;
+    top: 8px;
+    transform: translateX(-50%);
+    width: 220px;
+    z-index: 7;
+}
+
+.bigtop-card-frame:hover > .bigtop-card-tooltip,
+.bigtop-card-frame:focus-within > .bigtop-card-tooltip {
+    display: block;
+}
+
+.bigtop-card-has-help:focus-visible {
+    outline: 3px solid #ffe08a;
+    outline-offset: 3px;
 }
 
 .bigtop-coin-slots {

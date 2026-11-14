@@ -576,6 +576,27 @@ export class Game {
         return layouts[circleCount] ?? { size: 44, points: [] };
     }
 
+    getCardHelp(type) {
+        const definition = this.cardTypes[type];
+        if (!definition) {
+            return null;
+        }
+        const effects = {
+            draw: _('Immediate effect: draw the top deck card and complete it immediately. Its immediate effect also applies.'),
+            bankTwo: _('Immediate effect: place 2 coins from the bank on any free circles of your incomplete attractions.'),
+            ownCoin: _('Immediate effect: place one coin from behind your screen on any free circle of your incomplete attractions.'),
+        };
+        const clowns = {
+            perCard: _('Final scoring: 1 point for each of your completed attractions.'),
+            perStarCard: _('Final scoring: 2 points for each completed attraction with a star.'),
+            perThreeCircles: _('Final scoring: 1 point for every 3 circles on your completed attractions.'),
+            perTwoCoins: _('Final scoring: 1 point for every 2 coins instead of 1 point for every 5 coins.'),
+            perIncompleteCoin: _('Final scoring: 2 points for each coin on your incomplete attractions.'),
+            perLowCard: _('Final scoring: 2 points for each other completed attraction worth no more than 5 points.'),
+        };
+        return [effects[definition.effect], clowns[definition.clown]].filter(Boolean).join(' ') || null;
+    }
+
     createCard(card) {
         const type = Number(card.type);
         const element = document.createElement('div');
@@ -612,6 +633,25 @@ export class Game {
             slots.appendChild(slot);
         });
         element.appendChild(slots);
+
+        const help = this.getCardHelp(type);
+        if (help) {
+            element.classList.add('bigtop-card-has-help');
+            element.tabIndex = 0;
+            const icon = document.createElement('span');
+            icon.className = 'bigtop-card-help-icon';
+            icon.textContent = '!';
+            icon.setAttribute('aria-hidden', 'true');
+            element.appendChild(icon);
+
+            const tooltip = document.createElement('div');
+            tooltip.id = `bigtop-card-help-${card.id}`;
+            tooltip.className = 'bigtop-card-tooltip';
+            tooltip.setAttribute('role', 'tooltip');
+            tooltip.textContent = help;
+            element.appendChild(tooltip);
+            element.setAttribute('aria-describedby', tooltip.id);
+        }
         this.updateCardElement(element, card);
 
         return element;
@@ -664,8 +704,16 @@ export class Game {
             element.textContent = _('No bids yet');
             return;
         }
-        const playerName = this.gamedatas.players[highBidder]?.name ?? '';
-        element.textContent = `${_('Current bid')}: ${bid} — ${playerName}`;
+        const player = this.gamedatas.players[highBidder];
+        const playerName = document.createElement('span');
+        playerName.textContent = player?.name ?? '';
+        if (player?.color) {
+            playerName.style.color = `#${player.color.replace(/^#/, '')}`;
+        }
+        element.replaceChildren(
+            document.createTextNode(`${_('Current bid')}: ${bid} — `),
+            playerName,
+        );
     }
 
     notif_moneyChanged(args) {
