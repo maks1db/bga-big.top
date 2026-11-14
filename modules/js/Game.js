@@ -395,6 +395,9 @@ export class Game {
     }
 
     toggleCompletedArea(playerId) {
+        if (document.getElementById(`bigtop-completed-${playerId}`).children.length === 0) {
+            return;
+        }
         const area = document.querySelector(`#bigtop-player-table-${playerId} .bigtop-completed-area`);
         const content = document.getElementById(`bigtop-completed-content-${playerId}`);
         const button = document.querySelector(`.bigtop-completed-toggle[data-player-id="${playerId}"]`);
@@ -646,7 +649,7 @@ export class Game {
                 });
             });
         }
-        if (mode === 'place' || mode === 'payment') {
+        if (mode === 'payment') {
             root.querySelectorAll('.bigtop-coin-slot.bigtop-covered').forEach(slot => {
                 slot.classList.add('bigtop-actionable');
                 slot.tabIndex = 0;
