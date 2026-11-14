@@ -406,6 +406,7 @@ body,
 
 .bigtop-bank-coin {
     animation: bigtop-bank-coin-spin 3.5s linear infinite;
+    opacity: 0.75;
     background-image: url('img/elements-50.png');
     background-position: 100% 100%;
     background-repeat: no-repeat;
@@ -553,6 +554,7 @@ html[data-theme="dark"] #bigtop-game {
     background-size: 300% 200%;
     display: inline-block;
     height: 18px;
+    opacity: 0.75;
     vertical-align: -4px;
     width: 18px;
 }

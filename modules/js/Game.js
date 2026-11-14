@@ -244,8 +244,15 @@ export class Game {
             tableCounter: 'bank',
         });
 
-        this.playerIds = Object.values(gamedatas.players).map(player => Number(player.id));
+        const playerIds = Object.values(gamedatas.players).map(player => Number(player.id));
         this.visiblePlayerId = this.bga.players.getCurrentPlayerId();
+        if (!playerIds.includes(this.visiblePlayerId)) {
+            this.visiblePlayerId = playerIds[0];
+        }
+        this.playerIds = [
+            this.visiblePlayerId,
+            ...playerIds.filter(playerId => playerId !== this.visiblePlayerId),
+        ];
         Object.values(gamedatas.players).forEach(player => {
             const playerId = Number(player.id);
             if (player.money !== undefined) {
@@ -275,6 +282,12 @@ export class Game {
                 <div class="bigtop-card-row" id="bigtop-completed-${playerId}"></div>
             `);
             document.getElementById('bigtop-player-track').appendChild(table);
+        });
+
+        this.playerIds.forEach(playerId => {
+            document.getElementById('bigtop-player-track').appendChild(
+                document.getElementById(`bigtop-player-table-${playerId}`),
+            );
         });
 
         gamedatas.attractions.forEach(card => {
