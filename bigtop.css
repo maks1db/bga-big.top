@@ -1,5 +1,15 @@
 #bigtop-game {
-    background: #24100f url('img/arena-background.webp') center top / 100% auto no-repeat;
+    --bigtop-ink-2: oklch(0.11 0.015 50);
+    --bigtop-crimson: oklch(0.44 0.15 27);
+    --bigtop-crimson-2: oklch(0.32 0.11 25);
+    --bigtop-crimson-3: oklch(0.24 0.08 24);
+    --bigtop-gold: oklch(0.75 0.12 85);
+    --bigtop-gold-soft: oklch(0.86 0.09 92);
+    --bigtop-sawdust: oklch(0.71 0.075 84);
+    --bigtop-ring-w: min(80vw, 100vh);
+    --bigtop-squash: 0.46;
+    --bigtop-ring-h: calc(var(--bigtop-ring-w) * var(--bigtop-squash));
+    background: #24100f;
     border: 1px solid #9d7138;
     box-shadow: inset 0 0 45px #10050980;
     box-sizing: border-box;
@@ -16,11 +26,233 @@
     gap: 20px;
     justify-content: center;
     margin-bottom: 20px;
+    position: relative;
 }
 
 .bigtop-common-section {
     min-width: 180px;
+    position: relative;
     text-align: center;
+    z-index: 1;
+}
+
+.bigtop-scene {
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    position: absolute;
+}
+
+.bigtop-layer {
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    will-change: transform;
+}
+
+.bigtop-tent {
+    background:
+        radial-gradient(ellipse 120% 90% at 50% -30%, transparent 26%, #08040299 76%, #080402eb 100%),
+        repeating-conic-gradient(from 180deg at 50% -32%, var(--bigtop-crimson-2) 0deg 7.5deg, oklch(0.72 0.05 88) 7.5deg 15deg);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 30%, transparent 60%);
+}
+
+.bigtop-tent-wall {
+    background:
+        linear-gradient(to bottom, #0a050340, #0a0503db 88%),
+        repeating-linear-gradient(90deg, var(--bigtop-crimson-3) 0 7vmin, oklch(0.44 0.05 80) 7vmin 14vmin);
+    filter: saturate(0.85) brightness(0.8);
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 55%, transparent 82%);
+}
+
+.bigtop-floor {
+    background:
+        radial-gradient(ellipse 90% 120% at 50% 0%, #ffc46e24, transparent 55%),
+        repeating-linear-gradient(90deg, #00000057 0 0.3vmin, transparent 0.3vmin 11vmin),
+        linear-gradient(to bottom, oklch(0.30 0.05 62), oklch(0.17 0.03 55) 70%, oklch(0.12 0.02 50));
+    height: 58%;
+    top: auto;
+}
+
+.bigtop-ring-wrap {
+    height: var(--bigtop-ring-h);
+    left: 50%;
+    position: absolute;
+    top: 63%;
+    transform: translate(-50%, -50%);
+    width: var(--bigtop-ring-w);
+}
+
+.bigtop-arena {
+    background:
+        radial-gradient(ellipse at 50% 42%, #ffd68c4d, #ffd68c00 48%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .33 0 0 0 0 .18 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E"),
+        radial-gradient(ellipse at 50% 45%, var(--bigtop-sawdust) 0%, oklch(0.50 0.06 72) 72%, oklch(0.34 0.05 65) 100%);
+    border-radius: 50%;
+    box-shadow:
+        inset 0 0 11vmin #321404a8,
+        0 0 0 1.1vmin var(--bigtop-gold),
+        0 0 0 1.6vmin oklch(0.55 0.09 80),
+        0 0 0 2.1vmin var(--bigtop-crimson),
+        0 0 0 2.35vmin var(--bigtop-gold),
+        0 3.5vmin 7vmin #000000a6;
+    inset: 0;
+    position: absolute;
+}
+
+.bigtop-arena::before {
+    border: 0.45vmin solid oklch(0.72 0.11 30 / 0.5);
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 0.9vmin oklch(0.48 0.13 27 / 0.35), inset 0 0 0 1.35vmin oklch(0.75 0.12 85 / 0.4);
+    content: "";
+    inset: 12%;
+    position: absolute;
+}
+
+.bigtop-bulb {
+    animation: bigtop-twinkle 1.9s ease-in-out infinite alternate;
+    background: var(--bigtop-gold-soft);
+    border-radius: 50%;
+    box-shadow: 0 0 1vmin 0.25vmin #ffcd6ed9;
+    height: 1.15vmin;
+    min-height: 7px;
+    min-width: 7px;
+    position: absolute;
+    width: 1.15vmin;
+}
+
+.bigtop-bulb.bigtop-alt {
+    background: oklch(0.82 0.12 45);
+    box-shadow: 0 0 1vmin 0.25vmin #ff9650bf;
+}
+
+@keyframes bigtop-twinkle {
+    from { opacity: 0.3; transform: translate(-50%, -50%) scale(0.8); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+.bigtop-curtain {
+    background:
+        linear-gradient(to right, #0000008c, transparent 30%, #00000047 78%, #000000b3),
+        repeating-linear-gradient(90deg, var(--bigtop-crimson-3) 0 1.6vmin, var(--bigtop-crimson-2) 1.6vmin 2.9vmin, var(--bigtop-crimson) 2.9vmin 3.4vmin, var(--bigtop-crimson-2) 3.4vmin 4.6vmin);
+    bottom: 0;
+    box-shadow: inset 0 -18vmin 14vmin -8vmin #00000099;
+    min-width: 70px;
+    top: 0;
+    width: 17vmin;
+}
+
+.bigtop-curtain.bigtop-left {
+    border-right: 0.5vmin solid oklch(0.62 0.10 80 / 0.8);
+    left: 0;
+    right: auto;
+}
+
+.bigtop-curtain.bigtop-right {
+    background:
+        linear-gradient(to left, #0000008c, transparent 30%, #00000047 78%, #000000b3),
+        repeating-linear-gradient(90deg, var(--bigtop-crimson-3) 0 1.6vmin, var(--bigtop-crimson-2) 1.6vmin 2.9vmin, var(--bigtop-crimson) 2.9vmin 3.4vmin, var(--bigtop-crimson-2) 3.4vmin 4.6vmin);
+    border-left: 0.5vmin solid oklch(0.62 0.10 80 / 0.8);
+    left: auto;
+    right: 0;
+}
+
+.bigtop-valance {
+    background: linear-gradient(to bottom, var(--bigtop-crimson) 0%, var(--bigtop-crimson-2) 55%, var(--bigtop-crimson-3) 100%);
+    filter: drop-shadow(0 1.2vmin 1.4vmin #0000008c);
+    height: 15%;
+    mask-image: radial-gradient(circle 7.5vmin at 7.5vmin 0, transparent 96%, #000 100%);
+    mask-position: 0 100%;
+    mask-repeat: repeat-x;
+    mask-size: 15vmin 100%;
+    top: 0;
+}
+
+.bigtop-fringe {
+    background: repeating-linear-gradient(90deg, var(--bigtop-gold) 0 0.9vmin, oklch(0.58 0.10 82) 0.9vmin 1.8vmin);
+    height: 1.6vmin;
+    mask-image: radial-gradient(circle 7.5vmin at 7.5vmin 0, transparent 96%, #000 100%);
+    mask-position: 0 100%;
+    mask-repeat: repeat-x;
+    mask-size: 15vmin 500%;
+    opacity: 0.95;
+    top: 15%;
+}
+
+.bigtop-beam {
+    animation: bigtop-sway-a 9s ease-in-out infinite alternate;
+    background: linear-gradient(to bottom, #ffe6a561, #ffdc9621 45%, #ffdc9600 80%);
+    clip-path: polygon(45% 0, 55% 0, 100% 100%, 0 100%);
+    filter: blur(0.9vmin);
+    height: 135%;
+    mix-blend-mode: screen;
+    top: -12%;
+    transform-origin: 50% 0;
+    width: 24vmin;
+}
+
+.bigtop-beam.bigtop-b1 {
+    animation-name: bigtop-sway-a;
+    left: 9%;
+}
+
+.bigtop-beam.bigtop-b2 {
+    animation-duration: 11s;
+    animation-name: bigtop-sway-b;
+    left: auto;
+    right: 9%;
+}
+
+.bigtop-beam.bigtop-b3 {
+    animation-duration: 13s;
+    animation-name: bigtop-sway-c;
+    left: 50%;
+    margin-left: -15vmin;
+    opacity: 0.55;
+}
+
+@keyframes bigtop-sway-a {
+    from { transform: rotate(-13deg); }
+    to { transform: rotate(11deg); }
+}
+
+@keyframes bigtop-sway-b {
+    from { transform: rotate(13deg); }
+    to { transform: rotate(-11deg); }
+}
+
+@keyframes bigtop-sway-c {
+    from { transform: rotate(-6deg); }
+    to { transform: rotate(6deg); }
+}
+
+.bigtop-garland .bigtop-bulb {
+    height: 0.9vmin;
+    min-height: 5px;
+    min-width: 5px;
+    opacity: 0.85;
+    width: 0.9vmin;
+}
+
+.bigtop-dust {
+    animation: bigtop-drift linear infinite;
+    background: #ffe1a0e6;
+    border-radius: 50%;
+    filter: blur(1px);
+    position: absolute;
+}
+
+@keyframes bigtop-drift {
+    0% { opacity: 0; transform: translateY(0); }
+    12% { opacity: 0.85; }
+    85% { opacity: 0.5; }
+    100% { opacity: 0; transform: translateY(-40vmin); }
+}
+
+.bigtop-vignette {
+    background:
+        radial-gradient(ellipse 105% 90% at 50% 46%, transparent 52%, #0c06039e 100%),
+        linear-gradient(to bottom, #08040280, transparent 18%, transparent 84%, #0804028c);
 }
 
 .bigtop-common-section h3,
@@ -89,11 +321,26 @@ html[data-theme="dark"] #bigtop-game {
     color: #f1e8db;
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .bigtop-bulb,
+    .bigtop-beam,
+    .bigtop-dust {
+        animation: none !important;
+    }
+
+    .bigtop-beam.bigtop-b1 { transform: rotate(-4deg); }
+    .bigtop-beam.bigtop-b2 { transform: rotate(4deg); }
+    .bigtop-beam.bigtop-b3 { transform: rotate(0); }
+}
+
 @media (min-width: 1000px) {
     #bigtop-common {
         display: block;
         min-height: 600px;
-        position: relative;
+    }
+
+    .bigtop-ring-wrap {
+        top: 68%;
     }
 
     #bigtop-deck {
@@ -114,6 +361,11 @@ html[data-theme="dark"] #bigtop-game {
 }
 
 @media (max-width: 740px) {
+    #bigtop-game {
+        --bigtop-ring-w: min(97vw, 118vh);
+        --bigtop-squash: 0.62;
+    }
+
     #bigtop-common {
         gap: 10px;
     }

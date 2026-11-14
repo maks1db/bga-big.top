@@ -179,6 +179,26 @@ export class Game {
         this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
             <div id="bigtop-game">
                 <div id="bigtop-common">
+                    <div id="bigtop-scene" class="bigtop-scene" aria-hidden="true">
+                        <div class="bigtop-layer bigtop-tent" data-depth="4"></div>
+                        <div class="bigtop-layer bigtop-tent-wall" data-depth="6"></div>
+                        <div class="bigtop-layer bigtop-garland" data-depth="9"></div>
+                        <div class="bigtop-layer bigtop-floor" data-depth="3"></div>
+                        <div class="bigtop-layer" data-depth="12">
+                            <div class="bigtop-ring-wrap">
+                                <div class="bigtop-arena"></div>
+                            </div>
+                        </div>
+                        <div class="bigtop-layer bigtop-beam bigtop-b1" data-depth="7"></div>
+                        <div class="bigtop-layer bigtop-beam bigtop-b2" data-depth="7"></div>
+                        <div class="bigtop-layer bigtop-beam bigtop-b3" data-depth="5"></div>
+                        <div class="bigtop-layer bigtop-dust-layer" data-depth="14"></div>
+                        <div class="bigtop-layer bigtop-curtain bigtop-left" data-depth="16"></div>
+                        <div class="bigtop-layer bigtop-curtain bigtop-right" data-depth="16"></div>
+                        <div class="bigtop-layer bigtop-valance" data-depth="18"></div>
+                        <div class="bigtop-layer bigtop-fringe" data-depth="18"></div>
+                        <div class="bigtop-layer bigtop-vignette"></div>
+                    </div>
                     <div id="bigtop-deck" class="bigtop-common-section">
                         <h3>${_('Attraction deck')}</h3>
                         <div id="bigtop-deck-card"></div>
@@ -206,6 +226,7 @@ export class Game {
             </div>
         `);
 
+        this.setupArena();
         document.getElementById('bigtop-deck-card').appendChild(this.createCard({ id: 0, type: 0 }));
         document.getElementById('bigtop-deck-count').textContent = gamedatas.deckCount;
 
@@ -260,6 +281,90 @@ export class Game {
         document.getElementById('bigtop-player-tables').addEventListener('click', event => this.onCoinSlotClick(event));
         this.updateBehindMoney();
         this.bga.notifications.setupPromiseNotifications();
+    }
+
+    setupArena() {
+        const scene = document.getElementById('bigtop-scene');
+        const arena = scene.querySelector('.bigtop-arena');
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        for (let i = 0; i < 46; i++) {
+            const angle = (i / 46) * Math.PI * 2 - Math.PI / 2;
+            const bulb = document.createElement('i');
+            bulb.className = `bigtop-bulb${i % 4 === 2 ? ' bigtop-alt' : ''}`;
+            bulb.style.left = `${50 + Math.cos(angle) * 50.6}%`;
+            bulb.style.top = `${50 + Math.sin(angle) * 50.6}%`;
+            bulb.style.animationDelay = `${-(i * 0.13)}s`;
+            bulb.style.animationDuration = `${1.6 + (i % 5) * 0.17}s`;
+            arena.appendChild(bulb);
+        }
+
+        const garland = scene.querySelector('.bigtop-garland');
+        const strands = [
+            { x0: 4, y0: 10, x1: 50, y1: 26, n: 16 },
+            { x0: 96, y0: 10, x1: 50, y1: 26, n: 16 },
+            { x0: 12, y0: 22, x1: 50, y1: 34, n: 12 },
+            { x0: 88, y0: 22, x1: 50, y1: 34, n: 12 },
+        ];
+        strands.forEach((strand, strandIndex) => {
+            for (let i = 0; i <= strand.n; i++) {
+                const t = i / strand.n;
+                const bulb = document.createElement('i');
+                bulb.className = `bigtop-bulb${(i + strandIndex) % 3 === 1 ? ' bigtop-alt' : ''}`;
+                bulb.style.left = `${strand.x0 + (strand.x1 - strand.x0) * t}%`;
+                bulb.style.top = `${strand.y0 + (strand.y1 - strand.y0) * t + Math.sin(t * Math.PI) * 7}%`;
+                bulb.style.animationDelay = `${-(i * 0.31 + strandIndex)}s`;
+                bulb.style.animationDuration = `${1.5 + ((i + strandIndex) % 4) * 0.22}s`;
+                garland.appendChild(bulb);
+            }
+        });
+
+        if (!reduceMotion) {
+            const dustLayer = scene.querySelector('.bigtop-dust-layer');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('i');
+                const size = 2 + Math.random() * 3;
+                particle.className = 'bigtop-dust';
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${18 + Math.random() * 64}%`;
+                particle.style.top = `${38 + Math.random() * 52}%`;
+                particle.style.animationDuration = `${9 + Math.random() * 14}s`;
+                particle.style.animationDelay = `${-Math.random() * 18}s`;
+                dustLayer.appendChild(particle);
+            }
+        }
+
+        if (reduceMotion || !window.matchMedia('(pointer: fine)').matches) {
+            return;
+        }
+        const layers = Array.from(scene.querySelectorAll('.bigtop-layer[data-depth]'));
+        let targetX = 0;
+        let targetY = 0;
+        let currentX = 0;
+        let currentY = 0;
+        let animationFrame = null;
+        const animate = () => {
+            currentX += (targetX - currentX) * 0.06;
+            currentY += (targetY - currentY) * 0.06;
+            layers.forEach(layer => {
+                const depth = Number(layer.dataset.depth) || 0;
+                layer.style.transform = `translate3d(${currentX * depth}px, ${currentY * depth * 0.6}px, 0)`;
+            });
+            if (Math.abs(targetX - currentX) > 0.05 || Math.abs(targetY - currentY) > 0.05) {
+                animationFrame = requestAnimationFrame(animate);
+            } else {
+                animationFrame = null;
+            }
+        };
+        document.getElementById('bigtop-game').addEventListener('pointermove', event => {
+            const bounds = scene.getBoundingClientRect();
+            targetX = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
+            targetY = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
+            if (!animationFrame) {
+                animationFrame = requestAnimationFrame(animate);
+            }
+        }, { passive: true });
     }
 
     onHandClick(event) {
