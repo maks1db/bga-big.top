@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\bigtop\States;
 
+use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
@@ -39,13 +40,29 @@ class Auction extends GameState
 
         $this->globals->set('current_bid', $bid);
         $this->globals->set('high_bidder', $activePlayerId);
+        $this->globals->set('placed_card_ids', []);
         $this->notify->all('bidMade', clienttranslate('${player_name} bids ${bid}'), [
             'player_id' => $activePlayerId,
             'player_name' => $this->game->getPlayerNameById($activePlayerId),
             'bid' => $bid,
         ]);
 
-        return NextBid::class;
+        $auctionCard = $this->game->cards->getItemOnTop('auction');
+        $covered = array_map('intval', $auctionCard->covered);
+        foreach (Game::CARD_TYPES[$auctionCard->type]['bids'] as $index => $value) {
+            if ($value === $bid && !in_array($index, $covered, true) && $this->game->bank->get() > 0) {
+                $auctionCard->covered[] = $index;
+                sort($auctionCard->covered);
+                $this->game->cards->updateItem($auctionCard, 'covered');
+                $this->game->bank->inc(-1, new NotificationMessage());
+                $this->notify->all('coinPlaced', clienttranslate('A bank coin is placed on the auctioned attraction'), [
+                    'card' => $auctionCard,
+                ]);
+                break;
+            }
+        }
+
+        return PlaceCoins::class;
     }
 
     #[PossibleAction]

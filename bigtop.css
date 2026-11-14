@@ -101,3 +101,56 @@ html[data-theme="dark"] #bigtop-game {
     outline-color: #ffe08a;
     transform: translateY(-4px);
 }
+
+.bigtop-card-frame {
+    flex: 0 0 180px;
+    width: 180px;
+}
+
+.bigtop-coin-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    padding-top: 5px;
+}
+
+.bigtop-coin-slot {
+    background: #f7f0d8;
+    border: 1px solid #8b6a31;
+    border-radius: 50%;
+    color: #342515;
+    font-size: 12px;
+    font-weight: bold;
+    height: 28px;
+    padding: 0;
+    width: 28px;
+}
+
+.bigtop-coin-slot.bigtop-covered {
+    background: #d8a72d;
+    border: 3px solid #fff0a6;
+    box-shadow: 0 0 0 1px #71500d;
+    color: #241500;
+}
+
+.bigtop-coin-slot.bigtop-actionable {
+    cursor: pointer;
+    outline: 3px solid #1b8ed8;
+    outline-offset: 1px;
+}
+
+.notouch-device .bigtop-coin-slot.bigtop-actionable:hover {
+    background: #ffe08a;
+}
+
+.bigtop-complete .bigtop-coin-slots,
+#bigtop-hand .bigtop-coin-slots,
+#bigtop-deck .bigtop-coin-slots {
+    display: none;
+}
+
+.bigtop-behind {
+    font-weight: bold;
+    margin-top: 10px;
+}

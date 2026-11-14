@@ -14,6 +14,7 @@
 /**
  * @typedef {Gamedatas<bigtopPlayer> & {
  *   bank: number,
+ *   cardTypes: Object,
  *   deckCount: number,
  *   hand: bigtopCard[],
  *   attractions: bigtopCard[],
@@ -86,18 +87,74 @@ class Auction {
     }
 }
 
+class PlaceCoins {
+    constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
+    }
+
+    onEnteringState(args, isCurrentPlayerActive) {
+        this.bga.statusBar.setTitle(isCurrentPlayerActive
+            ? _('${you} may place or take back coins, then continue')
+            : _('${actplayer} may place or take back coins')
+        );
+        this.game.setCoinMode(isCurrentPlayerActive ? 'place' : null, args.placeable);
+        if (isCurrentPlayerActive) {
+            this.bga.statusBar.addActionButton(
+                _('Continue auction'),
+                () => this.bga.actions.performAction('actFinishPlacement'),
+            );
+        }
+    }
+
+    onLeavingState() {
+        this.game.setCoinMode(null, {});
+    }
+}
+
+class Payment {
+    constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
+    }
+
+    onEnteringState(args, isCurrentPlayerActive) {
+        this.bga.statusBar.setTitle(isCurrentPlayerActive
+            ? _('${you} must pay the winning bid')
+            : _('${actplayer} must pay the winning bid')
+        );
+        this.game.setCoinMode(isCurrentPlayerActive ? 'payment' : null, {});
+        if (isCurrentPlayerActive) {
+            const label = _('Pay $${bid}').replace('${bid}', args.bid);
+            this.bga.statusBar.addActionButton(
+                label,
+                () => this.bga.actions.performAction('actPay'),
+            );
+        }
+    }
+
+    onLeavingState() {
+        this.game.setCoinMode(null, {});
+    }
+}
+
 export class Game {
     constructor(bga) {
         this.bga = bga;
         this.bga.states.register('PlayerTurn', new PlayerTurn(this, bga));
         this.bga.states.register('Auction', new Auction(this, bga));
+        this.bga.states.register('PlaceCoins', new PlaceCoins(this, bga));
+        this.bga.states.register('Payment', new Payment(this, bga));
         this.moneyCounters = {};
         this.handSelectionActive = false;
+        this.coinMode = null;
+        this.placeable = {};
     }
 
     /** @param {bigtopGamedatas} gamedatas */
     setup(gamedatas) {
         this.gamedatas = gamedatas;
+        this.cardTypes = gamedatas.cardTypes;
 
         this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
             <div id="bigtop-game">
@@ -124,6 +181,7 @@ export class Game {
                 <div id="bigtop-hand-area">
                     <h3>${_('Your hand')}</h3>
                     <div id="bigtop-hand"></div>
+                    <div class="bigtop-behind">${_('Coins behind your screen')}: <span id="bigtop-behind-counter"></span> $</div>
                 </div>
             </div>
         `);
@@ -179,6 +237,8 @@ export class Game {
         });
 
         document.getElementById('bigtop-hand').addEventListener('click', event => this.onHandClick(event));
+        document.getElementById('bigtop-player-tables').addEventListener('click', event => this.onCoinSlotClick(event));
+        this.updateBehindMoney();
         this.bga.notifications.setupPromiseNotifications();
     }
 
@@ -193,30 +253,120 @@ export class Game {
         this.bga.actions.performAction('actAuctionCard', { cardId: Number(card.dataset.cardId) });
     }
 
+    onCoinSlotClick(event) {
+        const slot = event.target.closest('.bigtop-coin-slot.bigtop-actionable');
+        if (!slot || !this.coinMode) {
+            return;
+        }
+
+        const card = slot.closest('[data-card-id]');
+        const cardId = Number(card.dataset.cardId);
+        const circleIndex = Number(slot.dataset.circleIndex);
+        if (this.coinMode === 'payment' || slot.classList.contains('bigtop-covered')) {
+            this.bga.actions.performAction('actRemoveCoin', { cardId, circleIndex });
+        } else {
+            this.bga.actions.performAction('actPlaceCoin', { cardId, circleIndex });
+        }
+    }
+
+    setCoinMode(mode, placeable) {
+        this.coinMode = mode;
+        this.placeable = placeable || {};
+        document.querySelectorAll('.bigtop-coin-slot').forEach(slot => {
+            slot.classList.remove('bigtop-actionable');
+        });
+        if (!mode) {
+            return;
+        }
+
+        const playerId = this.bga.players.getCurrentPlayerId();
+        const root = document.getElementById(`bigtop-attractions-${playerId}`);
+        if (mode === 'place') {
+            Object.entries(this.placeable).forEach(([cardId, circleIndexes]) => {
+                circleIndexes.forEach(circleIndex => {
+                    root.querySelector(`[data-card-id="${cardId}"] [data-circle-index="${circleIndex}"]`)
+                        ?.classList.add('bigtop-actionable');
+                });
+            });
+        }
+        root.querySelectorAll('.bigtop-coin-slot.bigtop-covered').forEach(slot => {
+            slot.classList.add('bigtop-actionable');
+        });
+    }
+
     createCard(card) {
-        const element = document.createElement('div');
         const type = Number(card.type);
+        const element = document.createElement('div');
+        element.className = 'bigtop-card-frame';
+        element.dataset.cardId = card.id;
+        element.dataset.cardType = type;
+
+        const art = document.createElement('div');
         const spriteIndex = type === 0 ? 4 : type <= 30 ? type + 5 : type === 35 ? 5 : type - 31;
         const column = spriteIndex % 6;
         const row = Math.floor(spriteIndex / 6);
+        art.className = 'bigtop-card';
+        art.style.backgroundImage = `url(${this.bga.images.getImgUrl('cards.png')})`;
+        art.style.backgroundPosition = `${-column * 180}px ${-row * 252}px`;
+        art.setAttribute('role', 'img');
+        art.setAttribute('aria-label', type === 0 ? _('Face-down attraction card') : `${_('Card')} ${type}`);
+        element.appendChild(art);
 
-        element.className = 'bigtop-card';
-        element.dataset.cardId = card.id;
-        element.dataset.cardType = type;
-        element.style.backgroundImage = `url(${this.bga.images.getImgUrl('cards.png')})`;
-        element.style.backgroundPosition = `${-column * 180}px ${-row * 252}px`;
-        element.setAttribute('role', 'img');
-        element.setAttribute('aria-label', type === 0 ? _('Face-down attraction card') : `${_('Card')} ${type}`);
+        const slots = document.createElement('div');
+        slots.className = 'bigtop-coin-slots';
+        const bids = this.cardTypes[type]?.bids ?? [];
+        bids.forEach((bid, circleIndex) => {
+            const slot = document.createElement('button');
+            slot.type = 'button';
+            slot.className = 'bigtop-coin-slot';
+            slot.dataset.circleIndex = circleIndex;
+            slot.textContent = bid;
+            slots.appendChild(slot);
+        });
+        element.appendChild(slots);
+        this.updateCardElement(element, card);
 
         return element;
     }
 
+    updateCardElement(element, card) {
+        const covered = (card.covered ?? []).map(Number);
+        element.dataset.location = card.location;
+        element.dataset.locationArg = card.locationArg;
+        element.classList.toggle('bigtop-complete', card.location === 'completed');
+        element.querySelectorAll('.bigtop-coin-slot').forEach(slot => {
+            const isCovered = covered.includes(Number(slot.dataset.circleIndex));
+            slot.classList.toggle('bigtop-covered', isCovered);
+            slot.setAttribute('aria-label', `${_('Bid circle')} ${slot.textContent}${isCovered ? ` — ${_('covered')}` : ''}`);
+        });
+    }
+
+    updateCard(card) {
+        const element = document.querySelector(`.bigtop-card-frame[data-card-id="${Number(card.id)}"]`);
+        if (element) {
+            this.updateCardElement(element, card);
+        }
+    }
+
     moveCard(card, targetId) {
-        let element = document.querySelector(`.bigtop-card[data-card-id="${Number(card.id)}"]`);
+        let element = document.querySelector(`.bigtop-card-frame[data-card-id="${Number(card.id)}"]`);
         if (!element) {
             element = this.createCard(card);
+        } else {
+            this.updateCardElement(element, card);
         }
         document.getElementById(targetId).appendChild(element);
+    }
+
+    getBehindMoney() {
+        const playerId = this.bga.players.getCurrentPlayerId();
+        const total = this.moneyCounters[playerId]?.getValue() ?? 0;
+        const onCards = document.querySelectorAll(`#bigtop-attractions-${playerId} .bigtop-coin-slot.bigtop-covered`).length;
+        return total - onCards;
+    }
+
+    updateBehindMoney() {
+        document.getElementById('bigtop-behind-counter').textContent = this.getBehindMoney();
     }
 
     updateBid(currentBid, highBidder) {
@@ -250,11 +400,27 @@ export class Game {
         this.updateBid(args.bid, args.player_id);
     }
 
+    notif_coinPlaced(args) {
+        this.updateCard(args.card);
+        this.updateBehindMoney();
+    }
+
+    notif_coinRemoved(args) {
+        this.updateCard(args.card);
+        this.updateBehindMoney();
+    }
+
+    notif_attractionCompleted(args) {
+        this.moveCard(args.card, `bigtop-completed-${args.player_id}`);
+        this.updateBehindMoney();
+    }
+
     notif_auctionWon(args) {
         this.moveCard(args.card, `bigtop-attractions-${args.player_id}`);
+        this.updateBehindMoney();
     }
 
     notif_auctionDiscarded(args) {
-        document.querySelector(`.bigtop-card[data-card-id="${Number(args.card.id)}"]`)?.remove();
+        document.querySelector(`.bigtop-card-frame[data-card-id="${Number(args.card.id)}"]`)?.remove();
     }
 }

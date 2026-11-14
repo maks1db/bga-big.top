@@ -9,6 +9,7 @@ use Bga\GameFramework\Components\Counters\PlayerCounter;
 use Bga\GameFramework\Components\Counters\TableCounter;
 use Bga\GameFramework\Components\ItemManager\ItemLocation;
 use Bga\GameFramework\Components\ItemManager\ItemManager;
+use Bga\GameFramework\UserException;
 use Bga\Games\bigtop\States\StartAuction;
 
 class Game extends \Bga\GameFramework\Table
@@ -101,6 +102,7 @@ class Game extends \Bga\GameFramework\Table
         $this->playerMoney->fillResult($result, currentPlayerId: $currentPlayerId);
         $this->bank->fillResult($result);
 
+        $result['cardTypes'] = self::CARD_TYPES;
         $result['deckCount'] = $this->cards->countItemsInLocation('deck');
         $result['hand'] = $this->cards->getItemsInLocation(['hand', $currentPlayerId])->values();
         $result['attractions'] = $this->cards->getItemsInLocation('attraction')->values();
@@ -108,6 +110,72 @@ class Game extends \Bga\GameFramework\Table
         $result['auction'] = $this->cards->getItemsInLocation('auction')->values();
 
         return $result;
+    }
+
+    public function getCoinsOnCards(int $playerId): int
+    {
+        $cards = $this->cards->getItemsInLocation(['attraction', $playerId]);
+        return array_sum(array_map(
+            static fn(Card $card): int => count($card->covered),
+            $cards->values(),
+        ));
+    }
+
+    public function getBehindMoney(int $playerId): int
+    {
+        return $this->playerMoney->get($playerId) - $this->getCoinsOnCards($playerId);
+    }
+
+    public function moveCoinToBehind(int $cardId, int $circleIndex, int $playerId): Card
+    {
+        $card = $this->cards->getItemById($cardId);
+        if (
+            $card === null
+            || $card->location !== 'attraction'
+            || $card->locationArg !== $playerId
+            || !in_array($circleIndex, array_map('intval', $card->covered), true)
+        ) {
+            throw new UserException(clienttranslate('There is no coin on that circle'));
+        }
+
+        $card->covered = array_values(array_filter(
+            $card->covered,
+            static fn(int $index): bool => $index !== $circleIndex,
+        ));
+        $this->cards->updateItem($card, 'covered');
+
+        $this->bga->notify->all('coinRemoved', clienttranslate('${player_name} takes a coin back from a card'), [
+            'player_id' => $playerId,
+            'player_name' => $this->getPlayerNameById($playerId),
+            'card' => $card,
+        ]);
+
+        return $card;
+    }
+
+    public function completeIfNeeded(Card $card, int $playerId): bool
+    {
+        if (
+            $card->location !== 'attraction'
+            || $card->locationArg !== $playerId
+            || count($card->covered) !== count(self::CARD_TYPES[$card->type]['bids'])
+        ) {
+            return false;
+        }
+
+        $this->cards->moveItem($card, ['completed', $playerId]);
+        $card->covered = [];
+        $this->cards->updateItem($card, 'covered');
+
+        $this->bga->notify->all('attractionCompleted', clienttranslate('${player_name} completes ${card_name}'), [
+            'player_id' => $playerId,
+            'player_name' => $this->getPlayerNameById($playerId),
+            'card' => $card,
+            'card_name' => self::CARD_TYPES[$card->type]['name'],
+            'i18n' => ['card_name'],
+        ]);
+
+        return true;
     }
 
     protected function setupNewGame($players, $options = [])
