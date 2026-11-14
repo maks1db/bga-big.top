@@ -223,6 +223,7 @@ export class Game {
                 <div id="bigtop-player-tables">
                     <button id="bigtop-player-previous" class="bigtop-player-arrow bigtop-player-previous" type="button" hidden>‹</button>
                     <button id="bigtop-player-next" class="bigtop-player-arrow bigtop-player-next" type="button" hidden>›</button>
+                    <div id="bigtop-player-track"></div>
                 </div>
                 <div id="bigtop-hand-area">
                     <h3>${_('Your hand')}</h3>
@@ -273,7 +274,7 @@ export class Game {
                 <div class="bigtop-card-row" id="bigtop-attractions-${playerId}"></div>
                 <div class="bigtop-card-row" id="bigtop-completed-${playerId}"></div>
             `);
-            document.getElementById('bigtop-player-tables').appendChild(table);
+            document.getElementById('bigtop-player-track').appendChild(table);
         });
 
         gamedatas.attractions.forEach(card => {
@@ -317,8 +318,12 @@ export class Game {
 
     updatePlayerSlider() {
         const currentIndex = this.playerIds.indexOf(this.visiblePlayerId);
+        document.getElementById('bigtop-player-track').style.transform = `translateX(-${currentIndex * 100}%)`;
         this.playerIds.forEach(playerId => {
-            document.getElementById(`bigtop-player-table-${playerId}`).hidden = playerId !== this.visiblePlayerId;
+            const table = document.getElementById(`bigtop-player-table-${playerId}`);
+            const isVisible = playerId === this.visiblePlayerId;
+            table.inert = !isVisible;
+            table.setAttribute('aria-hidden', String(!isVisible));
         });
 
         const updateArrow = (elementId, playerId, label) => {

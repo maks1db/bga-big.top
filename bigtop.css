@@ -315,16 +315,27 @@ body,
     z-index: 1;
 }
 
+#bigtop-player-tables {
+    overflow: hidden;
+}
+
+#bigtop-player-track {
+    display: flex;
+    transition: transform 450ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
+}
+
 .bigtop-player-table {
     background: #1c0b0dd9;
     border: 1px solid #a67b40;
     border-radius: 8px;
     box-shadow: 0 3px 12px #0006;
+    box-sizing: border-box;
+    flex: 0 0 100%;
     margin-top: 10px;
     padding: 8px 12px;
 }
 
-.bigtop-player-table[hidden],
 .bigtop-player-arrow[hidden] {
     display: none;
 }
@@ -399,6 +410,10 @@ html[data-theme="dark"] #bigtop-game {
     .bigtop-beam.bigtop-b1 { transform: rotate(-4deg); }
     .bigtop-beam.bigtop-b2 { transform: rotate(4deg); }
     .bigtop-beam.bigtop-b3 { transform: rotate(0); }
+
+    #bigtop-player-track {
+        transition: none;
+    }
 }
 
 @media (min-width: 1000px) {
