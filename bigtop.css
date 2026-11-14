@@ -324,6 +324,50 @@ body,
     padding: 8px 12px;
 }
 
+.bigtop-player-table[hidden],
+.bigtop-player-arrow[hidden] {
+    display: none;
+}
+
+.bigtop-player-arrow {
+    align-items: center;
+    background: linear-gradient(145deg, #fff0ad, #c1852d);
+    border: 2px solid #ffe6a0;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #6c3a16, 0 4px 12px #0008;
+    color: #3b1b0b;
+    cursor: pointer;
+    display: flex;
+    font-family: Georgia, serif;
+    font-size: 42px;
+    height: 52px;
+    justify-content: center;
+    line-height: 1;
+    padding: 0 0 5px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52px;
+    z-index: 2;
+}
+
+.bigtop-player-previous {
+    left: 18px;
+}
+
+.bigtop-player-next {
+    right: 18px;
+}
+
+.notouch-device .bigtop-player-arrow:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 0 0 1px #6c3a16, 0 0 18px #ffd76e, 0 4px 12px #0008;
+}
+
+.bigtop-player-arrow:active {
+    filter: brightness(0.95);
+}
+
 #bigtop-hand-area {
     background: #1c0b0de6;
     border: 1px solid #c69953;

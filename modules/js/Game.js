@@ -220,7 +220,10 @@ export class Game {
                         <div class="bigtop-bank"><span id="bigtop-bank-counter"></span></div>
                     </div>
                 </div>
-                <div id="bigtop-player-tables"></div>
+                <div id="bigtop-player-tables">
+                    <button id="bigtop-player-previous" class="bigtop-player-arrow bigtop-player-previous" type="button" hidden>‹</button>
+                    <button id="bigtop-player-next" class="bigtop-player-arrow bigtop-player-next" type="button" hidden>›</button>
+                </div>
                 <div id="bigtop-hand-area">
                     <h3>${_('Your hand')}</h3>
                     <div id="bigtop-hand"></div>
@@ -240,6 +243,8 @@ export class Game {
             tableCounter: 'bank',
         });
 
+        this.playerIds = Object.values(gamedatas.players).map(player => Number(player.id));
+        this.visiblePlayerId = this.bga.players.getCurrentPlayerId();
         Object.values(gamedatas.players).forEach(player => {
             const playerId = Number(player.id);
             if (player.money !== undefined) {
@@ -286,8 +291,47 @@ export class Game {
 
         document.getElementById('bigtop-hand').addEventListener('click', event => this.onHandClick(event));
         document.getElementById('bigtop-player-tables').addEventListener('click', event => this.onCoinSlotClick(event));
+        this.setupPlayerSlider();
         this.updateBehindMoney();
         this.bga.notifications.setupPromiseNotifications();
+    }
+
+    setupPlayerSlider() {
+        if (!this.playerIds.includes(this.visiblePlayerId)) {
+            this.visiblePlayerId = this.playerIds[0];
+        }
+        document.getElementById('bigtop-player-previous').addEventListener('click', () => this.slidePlayer(-1));
+        document.getElementById('bigtop-player-next').addEventListener('click', () => this.slidePlayer(1));
+        this.updatePlayerSlider();
+    }
+
+    slidePlayer(direction) {
+        const currentIndex = this.playerIds.indexOf(this.visiblePlayerId);
+        const nextIndex = Math.max(0, Math.min(this.playerIds.length - 1, currentIndex + direction));
+        if (nextIndex === currentIndex) {
+            return;
+        }
+        this.visiblePlayerId = this.playerIds[nextIndex];
+        this.updatePlayerSlider();
+    }
+
+    updatePlayerSlider() {
+        const currentIndex = this.playerIds.indexOf(this.visiblePlayerId);
+        this.playerIds.forEach(playerId => {
+            document.getElementById(`bigtop-player-table-${playerId}`).hidden = playerId !== this.visiblePlayerId;
+        });
+
+        const updateArrow = (elementId, playerId, label) => {
+            const arrow = document.getElementById(elementId);
+            arrow.hidden = playerId === undefined;
+            if (playerId !== undefined) {
+                const text = `${label}: ${this.gamedatas.players[playerId].name}`;
+                arrow.setAttribute('aria-label', text);
+                arrow.title = text;
+            }
+        };
+        updateArrow('bigtop-player-previous', this.playerIds[currentIndex - 1], _('Previous player'));
+        updateArrow('bigtop-player-next', this.playerIds[currentIndex + 1], _('Next player'));
     }
 
     setupBidStepper() {
