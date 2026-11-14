@@ -289,8 +289,15 @@ export class Game {
                 <div class="bigtop-player-cards">
                     <div class="bigtop-card-row bigtop-attractions-row" id="bigtop-attractions-${playerId}"></div>
                     <div class="bigtop-completed-area">
-                        <h3>${_('Completed')}</h3>
-                        <div class="bigtop-card-row bigtop-completed-row" id="bigtop-completed-${playerId}"></div>
+                        <h3 class="bigtop-completed-heading">
+                            <button class="bigtop-completed-toggle" type="button" data-player-id="${playerId}" aria-expanded="false" aria-controls="bigtop-completed-content-${playerId}">
+                                <span>${_('Completed')} (<span id="bigtop-completed-count-${playerId}">0</span>)</span>
+                                <span class="bigtop-completed-arrow" aria-hidden="true">⌄</span>
+                            </button>
+                        </h3>
+                        <div class="bigtop-completed-content" id="bigtop-completed-content-${playerId}" hidden>
+                            <div class="bigtop-card-row bigtop-completed-row" id="bigtop-completed-${playerId}"></div>
+                        </div>
                     </div>
                 </div>
             `);
@@ -309,6 +316,7 @@ export class Game {
         gamedatas.completed.forEach(card => {
             document.getElementById(`bigtop-completed-${card.locationArg}`).appendChild(this.createCard(card));
         });
+        this.playerIds.forEach(playerId => this.updateCompletedCount(playerId));
         gamedatas.auction.forEach(card => {
             document.getElementById('bigtop-auction').appendChild(this.createCard(card));
         });
@@ -319,6 +327,12 @@ export class Game {
 
         document.getElementById('bigtop-hand').addEventListener('click', event => this.onHandClick(event));
         document.getElementById('bigtop-player-tables').addEventListener('click', event => this.onCoinSlotClick(event));
+        document.getElementById('bigtop-player-tables').addEventListener('click', event => {
+            const button = event.target.closest('.bigtop-completed-toggle');
+            if (button) {
+                this.toggleCompletedArea(Number(button.dataset.playerId));
+            }
+        });
         this.setupPlayerSlider();
         this.updateBehindMoney();
         this.bga.notifications.setupPromiseNotifications();
@@ -373,6 +387,52 @@ export class Game {
         if (table) {
             document.getElementById('bigtop-player-track').style.height = `${table.offsetHeight}px`;
         }
+    }
+
+    updateCompletedCount(playerId) {
+        const count = document.getElementById(`bigtop-completed-${playerId}`).children.length;
+        document.getElementById(`bigtop-completed-count-${playerId}`).textContent = count;
+    }
+
+    toggleCompletedArea(playerId) {
+        const area = document.querySelector(`#bigtop-player-table-${playerId} .bigtop-completed-area`);
+        const content = document.getElementById(`bigtop-completed-content-${playerId}`);
+        const button = document.querySelector(`.bigtop-completed-toggle[data-player-id="${playerId}"]`);
+        if (content.dataset.animating === 'true') {
+            return;
+        }
+
+        const expanded = !area.classList.contains('bigtop-expanded');
+        area.classList.toggle('bigtop-expanded', expanded);
+        button.setAttribute('aria-expanded', String(expanded));
+        const immediate = !this.bga.gameui.bgaAnimationsActive()
+            || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (immediate) {
+            content.hidden = !expanded;
+            this.updatePlayerSliderHeight();
+            return;
+        }
+
+        content.dataset.animating = 'true';
+        content.hidden = false;
+        const startHeight = expanded ? 0 : content.getBoundingClientRect().height;
+        const endHeight = expanded ? content.scrollHeight : 0;
+        content.classList.add('bigtop-completed-animating');
+        this.updatePlayerSliderHeight();
+        const animation = content.animate([
+            { height: `${startHeight}px`, opacity: expanded ? 0 : 1 },
+            { height: `${endHeight}px`, opacity: expanded ? 1 : 0 },
+        ], {
+            duration: 300,
+            easing: 'ease-in-out',
+        });
+        const finish = () => {
+            content.hidden = !expanded;
+            content.classList.remove('bigtop-completed-animating');
+            delete content.dataset.animating;
+            this.updatePlayerSliderHeight();
+        };
+        animation.finished.then(finish, finish);
     }
 
     setupBidStepper() {
@@ -757,8 +817,8 @@ export class Game {
                     opacity: 0,
                 },
             ], {
-                delay: index * 35,
-                duration: 450,
+                delay: index * 70,
+                duration: 800,
                 easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)',
                 fill: 'both',
             }));
@@ -843,6 +903,31 @@ export class Game {
         document.getElementById('bigtop-behind-counter').textContent = this.getBehindMoney();
     }
 
+    animateBehindMoneyDecrease(startValue, endValue) {
+        if (!this.bga.gameui.bgaAnimationsActive()
+            || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            this.updateBehindMoney();
+            return;
+        }
+
+        const element = document.getElementById('bigtop-behind-counter');
+        const startedAt = performance.now();
+        return new Promise(resolve => {
+            const update = now => {
+                const progress = Math.min(1, (now - startedAt) / 600);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                element.textContent = Math.round(startValue + (endValue - startValue) * eased);
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    this.updateBehindMoney();
+                    resolve();
+                }
+            };
+            requestAnimationFrame(update);
+        });
+    }
+
     updateAuctionVisibility() {
         const auction = document.getElementById('bigtop-auction');
         document.getElementById('bigtop-auction-area').hidden = auction.children.length === 0;
@@ -869,7 +954,14 @@ export class Game {
 
     notif_moneyChanged(args) {
         const playerId = this.bga.players.getCurrentPlayerId();
-        this.moneyCounters[playerId]?.toValue(Number(args.value));
+        const value = Number(args.value);
+        const previousValue = this.moneyCounters[playerId]?.getValue() ?? value;
+        const previousBehind = this.getBehindMoney();
+        this.moneyCounters[playerId]?.toValue(value);
+        if (value < previousValue) {
+            const onCards = previousValue - previousBehind;
+            return this.animateBehindMoneyDecrease(previousBehind, value - onCards);
+        }
         this.updateBehindMoney();
     }
 
@@ -911,6 +1003,7 @@ export class Game {
 
     notif_attractionCompleted(args) {
         this.moveCard(args.card, `bigtop-completed-${args.player_id}`);
+        this.updateCompletedCount(args.player_id);
         this.updateBehindMoney();
     }
 

@@ -349,22 +349,59 @@ body,
 }
 
 .bigtop-completed-area {
+    border-top: 2px dashed #a67b40;
+    margin-top: 12px;
+    padding-top: 8px;
+}
+
+.bigtop-completed-heading {
+    color: #ffe9b5;
+    font-size: 14px;
+    margin: 0;
+    text-align: center;
+    text-shadow: 0 2px 3px #000;
+}
+
+.bigtop-completed-toggle {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    gap: 8px;
+    justify-content: center;
+    padding: 4px 8px;
+    text-shadow: inherit;
+    width: 100%;
+}
+
+.notouch-device .bigtop-completed-toggle:hover {
+    color: #fff0ad;
+}
+
+.bigtop-completed-arrow {
+    display: inline-block;
+    font-size: 20px;
+    line-height: 14px;
+    transition: transform 250ms ease;
+}
+
+.bigtop-completed-area.bigtop-expanded .bigtop-completed-arrow {
+    transform: rotate(180deg);
+}
+
+.bigtop-completed-content {
+    padding-top: 8px;
+}
+
+.bigtop-completed-content[hidden] {
     display: none;
 }
 
-.bigtop-completed-area:has(.bigtop-completed-row:not(:empty)) {
-    border-top: 2px dashed #a67b40;
-    display: block;
-    margin-top: 16px;
-    padding-top: 12px;
-}
-
-.bigtop-completed-area h3 {
-    color: #ffe9b5;
-    font-size: 14px;
-    margin: 0 0 8px;
-    text-align: center;
-    text-shadow: 0 2px 3px #000;
+.bigtop-completed-animating {
+    overflow: hidden;
 }
 
 .bigtop-completed-row {
@@ -480,6 +517,10 @@ html[data-theme="dark"] #bigtop-game {
     }
 
     #bigtop-hand .bigtop-card-frame {
+        transition: none !important;
+    }
+
+    .bigtop-completed-arrow {
         transition: none !important;
     }
 
