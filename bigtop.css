@@ -289,6 +289,7 @@ body,
     box-shadow: 0 2px 5px #0006;
     flex: 0 0 180px;
     height: 252px;
+    position: relative;
     width: 180px;
 }
 
@@ -465,44 +466,49 @@ html[data-theme="dark"] #bigtop-game {
 
 .bigtop-card-frame {
     flex: 0 0 180px;
+    position: relative;
     width: 180px;
 }
 
 .bigtop-coin-slots {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    justify-content: center;
-    padding-top: 5px;
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
 }
 
 .bigtop-coin-slot {
-    background: #f7f0d8;
-    border: 1px solid #8b6a31;
+    background: transparent;
+    border: 0;
     border-radius: 50%;
-    color: #342515;
-    font-size: 12px;
-    font-weight: bold;
-    height: 28px;
+    height: var(--bigtop-coin-size);
     padding: 0;
-    width: 28px;
+    pointer-events: none;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: var(--bigtop-coin-size);
 }
 
 .bigtop-coin-slot.bigtop-covered {
-    background: #d8a72d;
-    border: 3px solid #fff0a6;
-    box-shadow: 0 0 0 1px #71500d;
-    color: #241500;
+    background-color: transparent;
+    background-image: url('img/elements.png');
+    background-position: 100% 100%;
+    background-repeat: no-repeat;
+    background-size: 300% 200%;
+    box-shadow: 0 2px 5px #0008;
 }
 
 .bigtop-coin-slot.bigtop-actionable {
+    background-color: #ffe08a33;
+    box-shadow: 0 0 14px #ffd769;
     cursor: pointer;
-    outline: 3px solid #1b8ed8;
-    outline-offset: 1px;
+    outline: 3px solid #ffe08a;
+    outline-offset: 2px;
+    pointer-events: auto;
 }
 
 .notouch-device .bigtop-coin-slot.bigtop-actionable:hover {
-    background: #ffe08a;
+    outline-color: #fff;
+    filter: brightness(1.15);
 }
 
 .bigtop-complete .bigtop-coin-slots,

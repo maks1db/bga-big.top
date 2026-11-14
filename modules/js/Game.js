@@ -512,6 +512,7 @@ export class Game {
         this.placeable = placeable || {};
         document.querySelectorAll('.bigtop-coin-slot').forEach(slot => {
             slot.classList.remove('bigtop-actionable');
+            slot.tabIndex = -1;
         });
         if (!mode) {
             return;
@@ -522,16 +523,44 @@ export class Game {
         if (mode === 'place' || mode === 'effect') {
             Object.entries(this.placeable).forEach(([cardId, circleIndexes]) => {
                 circleIndexes.forEach(circleIndex => {
-                    root.querySelector(`[data-card-id="${cardId}"] [data-circle-index="${circleIndex}"]`)
-                        ?.classList.add('bigtop-actionable');
+                    const slot = root.querySelector(`[data-card-id="${cardId}"] [data-circle-index="${circleIndex}"]`);
+                    if (slot) {
+                        slot.classList.add('bigtop-actionable');
+                        slot.tabIndex = 0;
+                    }
                 });
             });
         }
         if (mode === 'place' || mode === 'payment') {
             root.querySelectorAll('.bigtop-coin-slot.bigtop-covered').forEach(slot => {
                 slot.classList.add('bigtop-actionable');
+                slot.tabIndex = 0;
             });
         }
+    }
+
+    getCoinLayout(type, circleCount) {
+        if (type >= 31 && type <= 34) {
+            return {
+                size: 50,
+                points: [[50, 172], [130, 172], [50, 222], [130, 222]],
+            };
+        }
+        const layouts = {
+            2: { size: 50, points: [[50, 220], [130, 220]] },
+            3: { size: 50, points: [[40, 215], [90, 215], [140, 215]] },
+            4: { size: 44, points: [[50, 182], [130, 182], [50, 231], [130, 231]] },
+            5: { size: 44, points: [[50, 181], [130, 181], [28, 230], [90, 230], [152, 230]] },
+            9: {
+                size: 46,
+                points: [
+                    [40, 124], [90, 124], [140, 124],
+                    [40, 175], [90, 175], [140, 175],
+                    [40, 226], [90, 226], [140, 226],
+                ],
+            },
+        };
+        return layouts[circleCount] ?? { size: 44, points: [] };
     }
 
     createCard(card) {
@@ -555,12 +584,18 @@ export class Game {
         const slots = document.createElement('div');
         slots.className = 'bigtop-coin-slots';
         const bids = this.cardTypes[type]?.bids ?? [];
+        const layout = this.getCoinLayout(type, bids.length);
+        slots.style.setProperty('--bigtop-coin-size', `${layout.size}px`);
         bids.forEach((bid, circleIndex) => {
+            const [x, y] = layout.points[circleIndex];
             const slot = document.createElement('button');
             slot.type = 'button';
             slot.className = 'bigtop-coin-slot';
             slot.dataset.circleIndex = circleIndex;
-            slot.textContent = bid;
+            slot.dataset.bid = bid;
+            slot.tabIndex = -1;
+            slot.style.left = `${x / 180 * 100}%`;
+            slot.style.top = `${y / 252 * 100}%`;
             slots.appendChild(slot);
         });
         element.appendChild(slots);
@@ -577,7 +612,7 @@ export class Game {
         element.querySelectorAll('.bigtop-coin-slot').forEach(slot => {
             const isCovered = covered.includes(Number(slot.dataset.circleIndex));
             slot.classList.toggle('bigtop-covered', isCovered);
-            slot.setAttribute('aria-label', `${_('Bid circle')} ${slot.textContent}${isCovered ? ` — ${_('covered')}` : ''}`);
+            slot.setAttribute('aria-label', `${_('Bid circle')} ${slot.dataset.bid}${isCovered ? ` — ${_('covered')}` : ''}`);
         });
     }
 
