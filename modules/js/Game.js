@@ -282,8 +282,8 @@ export class Game {
             }
             table.insertAdjacentHTML('beforeend', `
                 <div class="bigtop-player-cards">
-                    <div class="bigtop-card-row bigtop-completed-row" id="bigtop-completed-${playerId}"></div>
                     <div class="bigtop-card-row bigtop-attractions-row" id="bigtop-attractions-${playerId}"></div>
+                    <div class="bigtop-card-row bigtop-completed-row" id="bigtop-completed-${playerId}"></div>
                 </div>
             `);
             document.getElementById('bigtop-player-track').appendChild(table);
@@ -529,6 +529,9 @@ export class Game {
     setCoinMode(mode, placeable) {
         this.coinMode = mode;
         this.placeable = placeable || {};
+        document.querySelectorAll('.bigtop-card-coin-action').forEach(card => {
+            card.classList.remove('bigtop-card-coin-action');
+        });
         document.querySelectorAll('.bigtop-coin-slot').forEach(slot => {
             slot.classList.remove('bigtop-actionable');
             slot.tabIndex = -1;
@@ -556,6 +559,9 @@ export class Game {
                 slot.tabIndex = 0;
             });
         }
+        root.querySelectorAll('.bigtop-coin-slot.bigtop-actionable:not(.bigtop-covered)').forEach(slot => {
+            slot.closest('.bigtop-card-frame').classList.add('bigtop-card-coin-action');
+        });
     }
 
     getCoinLayout(type, circleCount) {
@@ -644,12 +650,6 @@ export class Game {
         if (help) {
             element.classList.add('bigtop-card-has-help');
             element.tabIndex = 0;
-            const icon = document.createElement('span');
-            icon.className = 'bigtop-card-help-icon';
-            icon.textContent = '!';
-            icon.setAttribute('aria-hidden', 'true');
-            element.appendChild(icon);
-
             const tooltip = document.createElement('div');
             tooltip.id = `bigtop-card-help-${card.id}`;
             tooltip.className = 'bigtop-card-tooltip';

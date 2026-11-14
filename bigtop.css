@@ -342,39 +342,28 @@ body,
 }
 
 .bigtop-player-cards {
-    align-items: flex-start;
+    align-items: stretch;
     display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
+    flex-direction: column;
 }
 
 .bigtop-completed-row {
-    align-items: center;
-    flex: 0 0 180px;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    gap: 0;
+    flex: 0 0 100%;
+    flex-direction: row;
+}
+
+.bigtop-completed-row:not(:empty) {
+    border-top: 2px dashed #a67b40;
+    margin-top: 16px;
+    padding-top: 16px;
 }
 
 .bigtop-completed-row:empty {
     display: none;
 }
 
-.bigtop-completed-row .bigtop-card-frame {
-    flex-shrink: 0;
-}
-
-.bigtop-completed-row .bigtop-card-frame + .bigtop-card-frame {
-    margin-top: -202px;
-}
-
-.bigtop-completed-row .bigtop-card-frame:hover,
-.bigtop-completed-row .bigtop-card-frame:focus-within {
-    z-index: 2;
-}
-
 .bigtop-attractions-row {
-    flex: 1 1 190px;
+    flex: 0 0 100%;
 }
 
 .bigtop-player-arrow[hidden] {
@@ -478,6 +467,16 @@ html[data-theme="dark"] #bigtop-game {
 
     #bigtop-player-track {
         transition: none;
+    }
+
+    .bigtop-card-frame.bigtop-card-coin-action .bigtop-card,
+    .bigtop-coin-slot.bigtop-actionable:not(.bigtop-covered)::before {
+        animation: none !important;
+    }
+
+    .bigtop-coin-slot.bigtop-actionable:not(.bigtop-covered)::before {
+        opacity: 0.55;
+        transform: none;
     }
 }
 
@@ -645,6 +644,19 @@ html[data-theme="dark"] #bigtop-game {
     width: 180px;
 }
 
+.bigtop-card-frame.bigtop-card-coin-action .bigtop-card {
+    animation: bigtop-card-coin-glow 2.2s ease-in-out infinite;
+    background-origin: border-box;
+    border: 3px solid #f6cf67;
+    box-shadow: 0 0 12px #ffd76960;
+    box-sizing: border-box;
+}
+
+@keyframes bigtop-card-coin-glow {
+    0%, 100% { box-shadow: 0 0 8px #ffd76940; }
+    50% { box-shadow: 0 0 20px #ffd769a0; }
+}
+
 .bigtop-card-flight {
     margin: 0;
     pointer-events: none;
@@ -656,28 +668,6 @@ html[data-theme="dark"] #bigtop-game {
 
 .bigtop-card-flight .bigtop-card-tooltip {
     display: none;
-}
-
-.bigtop-card-help-icon {
-    align-items: center;
-    background: linear-gradient(#fff0ad, #c1852d);
-    border: 2px solid #fff1b8;
-    border-radius: 50%;
-    box-shadow: 0 0 0 1px #6c3a16, 0 2px 6px #0008;
-    color: #3b1b0b;
-    display: flex;
-    font-family: Georgia, serif;
-    font-size: 17px;
-    font-weight: bold;
-    height: 24px;
-    justify-content: center;
-    left: 50%;
-    pointer-events: none;
-    position: absolute;
-    top: -7px;
-    transform: translateX(-50%);
-    width: 24px;
-    z-index: 4;
 }
 
 .bigtop-card-tooltip {
@@ -745,6 +735,31 @@ html[data-theme="dark"] #bigtop-game {
     outline: 3px solid #ffe08a;
     outline-offset: 2px;
     pointer-events: auto;
+}
+
+.bigtop-coin-slot.bigtop-actionable:not(.bigtop-covered) {
+    border: 3px solid #f6cf67;
+    box-sizing: border-box;
+    outline: 2px solid #7a4418;
+    outline-offset: 1px;
+}
+
+.bigtop-coin-slot.bigtop-actionable:not(.bigtop-covered)::before {
+    animation: bigtop-coin-target-pulse 1.6s ease-in-out infinite;
+    background-image: url('img/elements-50.png');
+    background-position: 100% 100%;
+    background-repeat: no-repeat;
+    background-size: 300% 200%;
+    border-radius: 50%;
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+}
+
+@keyframes bigtop-coin-target-pulse {
+    0%, 100% { opacity: 0.25; transform: scale(0.82); }
+    50% { opacity: 0.75; transform: scale(1); }
 }
 
 .notouch-device .bigtop-coin-slot.bigtop-actionable:hover {
