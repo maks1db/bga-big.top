@@ -1,65 +1,103 @@
-/**
- *------
- * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * bigtop implementation : © <Your name here> <Your email address here>
- *
- * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
- * See http://en.boardgamearena.com/#!doc/Studio for more information.
- * -----
- */
+#bigtop-game {
+    color: #2d2118;
+    font-family: Arial, sans-serif;
+}
 
-/*
-    This is the CSS stylesheet of your game User Interface.
-    
-    Styles defined on this file will be applied to HTML elements you create (in Game.js).
-    
-    Usually, you are using CSS to:
-    
-    1°) define the overall layout of your game
-        (ex: place the board on the top left, place player's hand beside, place the deck on the right, ...).
+#bigtop-common {
+    align-items: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
 
-    2°) create your CSS-sprites:
-        All images of your games should be gathered into a small number of image files. Then, using
-        background-image and background-position CSS properties, you create HTML blocks that can 
-        display these images correctly (see example below).
-    
-    3°) ... anything else:
-        It is really easy to add and remove CSS classes dynamically from your Javascript with
-        dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class
-        (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why,
-        very often, using CSS classes for the logic of your user interface allow you to do complex
-        thing easily.
-        
-        
-     Note: on the production platform, this file will be compressed and comments will be removed.
-           Consequently, don't hesitate to put as many comments as necessary.
-*/
+.bigtop-common-section {
+    min-width: 180px;
+    text-align: center;
+}
 
+.bigtop-common-section h3,
+.bigtop-player-table h3,
+#bigtop-hand-area h3 {
+    margin: 6px 0;
+}
 
-/* Note: you must not use any @import directive */
+.bigtop-card {
+    background-repeat: no-repeat;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px #0006;
+    flex: 0 0 180px;
+    height: 252px;
+    width: 180px;
+}
 
+.bigtop-card-row,
+#bigtop-hand,
+#bigtop-auction,
+#bigtop-deck-card {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    min-height: 20px;
+}
 
-/********* You can start writing your CSS below this line: **********/
+.bigtop-player-table {
+    border-top: 1px solid #8f795f;
+    padding: 8px 0;
+}
 
+#bigtop-hand-area {
+    border-top: 2px solid #8f795f;
+    margin-top: 16px;
+    padding-top: 8px;
+    text-align: center;
+}
 
-/*
-    Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
+.bigtop-bank,
+.bigtop-deck-count {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 8px;
+}
 
-    .white_token {
-        background-image: url('img/tokens.png');
-        background-position: 0px 0px;
+html[data-theme="dark"] #bigtop-game {
+    color: #f1e8db;
+}
+
+@media (max-width: 740px) {
+    #bigtop-common {
+        gap: 10px;
     }
-    .black_token {
-        background-image: url('img/tokens.png');
-        background-position: -20px 0px;
-    }
-    .token {
-        width: 20px;
-        height: 20px;
-        background-repeat: none;
-    }
-*/
+}
 
+#bigtop-current-bid {
+    font-weight: bold;
+    margin-top: 10px;
+    min-height: 20px;
+}
 
+#bigtop-bid-controls:not([hidden]) {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+}
 
+#bigtop-bid-input {
+    box-sizing: border-box;
+    font-size: 18px;
+    max-width: 100px;
+    padding: 6px;
+}
 
+#bigtop-hand-area.bigtop-selectable .bigtop-card {
+    cursor: pointer;
+    outline: 3px solid #d39b24;
+    outline-offset: 3px;
+}
+
+.notouch-device #bigtop-hand-area.bigtop-selectable .bigtop-card:hover {
+    outline-color: #ffe08a;
+    transform: translateY(-4px);
+}

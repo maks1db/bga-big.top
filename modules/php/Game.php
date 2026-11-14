@@ -1,214 +1,170 @@
 <?php
-/**
- *------
- * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * bigtop implementation : © <Your name here> <Your email address here>
- *
- * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
- * See http://en.boardgamearena.com/#!doc/Studio for more information.
- * -----
- *
- * Game.php
- *
- * This is the main file for your game logic.
- *
- * In this PHP file, you are going to defines the rules of the game.
- */
+
 declare(strict_types=1);
 
 namespace Bga\Games\bigtop;
 
-use Bga\Games\bigtop\States\PlayerTurn;
+use Bga\GameFramework\Components\CounterVisibility;
 use Bga\GameFramework\Components\Counters\PlayerCounter;
+use Bga\GameFramework\Components\Counters\TableCounter;
+use Bga\GameFramework\Components\ItemManager\ItemLocation;
+use Bga\GameFramework\Components\ItemManager\ItemManager;
+use Bga\Games\bigtop\States\StartAuction;
 
 class Game extends \Bga\GameFramework\Table
 {
-    public static array $CARD_TYPES;
+    public const TYPE_GAME_END = 35;
 
-    public PlayerCounter $playerEnergy;
+    public const CARD_TYPES = [
+        1 => ['name' => 'Clown', 'points' => 3, 'stars' => 1, 'bids' => [7, 7, 7], 'effect' => 'draw', 'clown' => null],
+        2 => ['name' => 'Snake Charmer', 'points' => 10, 'stars' => 0, 'bids' => [3, 5, 7, 10, 12], 'effect' => null, 'clown' => null],
+        3 => ['name' => 'Knife Thrower', 'points' => 8, 'stars' => 0, 'bids' => [11, 12], 'effect' => null, 'clown' => null],
+        4 => ['name' => 'Clown', 'points' => 1, 'stars' => 1, 'bids' => [4, 5, 6, 7, 10], 'effect' => null, 'clown' => 'perTwoCoins'],
+        5 => ['name' => 'Fire Eater', 'points' => 2, 'stars' => 1, 'bids' => [1, 2, 3], 'effect' => null, 'clown' => null],
+        6 => ['name' => 'Tightrope Walker', 'points' => 3, 'stars' => 0, 'bids' => [10, 12], 'effect' => 'bankTwo', 'clown' => null],
+        7 => ['name' => 'Clown', 'points' => 1, 'stars' => 1, 'bids' => [4, 4, 6, 6], 'effect' => null, 'clown' => 'perCard'],
+        8 => ['name' => 'Strongman', 'points' => 1, 'stars' => 0, 'bids' => [5, 6], 'effect' => null, 'clown' => null],
+        9 => ['name' => 'Clown', 'points' => 2, 'stars' => 1, 'bids' => [5, 6, 7, 10], 'effect' => null, 'clown' => 'perStarCard'],
+        10 => ['name' => 'Clown', 'points' => 2, 'stars' => 1, 'bids' => [7, 7, 7], 'effect' => null, 'clown' => 'perLowCard'],
+        11 => ['name' => 'Stilt Walker', 'points' => 8, 'stars' => 1, 'bids' => [5, 6, 7, 8], 'effect' => null, 'clown' => null],
+        12 => ['name' => 'Plate Spinner', 'points' => 11, 'stars' => 0, 'bids' => [3, 5, 9], 'effect' => null, 'clown' => null],
+        13 => ['name' => 'Juggler', 'points' => 6, 'stars' => 0, 'bids' => [4, 5, 6], 'effect' => null, 'clown' => null],
+        14 => ['name' => 'Equestrian', 'points' => 7, 'stars' => 0, 'bids' => [10, 12], 'effect' => null, 'clown' => null],
+        15 => ['name' => 'Tower of Chairs', 'points' => 3, 'stars' => 2, 'bids' => [6, 7, 8], 'effect' => null, 'clown' => null],
+        16 => ['name' => 'Fortune Teller', 'points' => 3, 'stars' => 1, 'bids' => [4, 7], 'effect' => null, 'clown' => null],
+        17 => ['name' => 'Animal Trainer', 'points' => 4, 'stars' => 0, 'bids' => [5, 6, 7], 'effect' => null, 'clown' => null],
+        18 => ['name' => 'Contortionist', 'points' => 2, 'stars' => 0, 'bids' => [2, 4], 'effect' => 'ownCoin', 'clown' => null],
+        19 => ['name' => 'Trapeze Artist', 'points' => 9, 'stars' => 0, 'bids' => [1, 3, 5], 'effect' => null, 'clown' => null],
+        20 => ['name' => 'Acrobats', 'points' => 3, 'stars' => 0, 'bids' => [2, 6, 8], 'effect' => 'ownCoin', 'clown' => null],
+        21 => ['name' => 'Reptile Keeper', 'points' => 1, 'stars' => 1, 'bids' => [3, 5], 'effect' => null, 'clown' => null],
+        22 => ['name' => 'Human Cannonball', 'points' => 3, 'stars' => 2, 'bids' => [3, 3, 7, 10], 'effect' => null, 'clown' => null],
+        23 => ['name' => 'Extra Acrobat', 'points' => 9, 'stars' => 1, 'bids' => [4, 6, 8, 9], 'effect' => null, 'clown' => null],
+        24 => ['name' => 'Sword Swallower', 'points' => 12, 'stars' => 0, 'bids' => [3, 5, 7, 9, 11], 'effect' => null, 'clown' => null],
+        25 => ['name' => 'Clown', 'points' => 1, 'stars' => 1, 'bids' => [1, 2, 3, 4, 5, 6, 7, 8, 9], 'effect' => null, 'clown' => 'perThreeCircles'],
+        26 => ['name' => 'Teeterboard Acrobats', 'points' => 4, 'stars' => 0, 'bids' => [7, 9, 11], 'effect' => 'ownCoin', 'clown' => null],
+        27 => ['name' => 'Clown', 'points' => 2, 'stars' => 1, 'bids' => [1, 3, 6, 11], 'effect' => null, 'clown' => 'perIncompleteCoin'],
+        28 => ['name' => 'Ring of Fire', 'points' => 20, 'stars' => 1, 'bids' => [8, 9, 11, 13], 'effect' => null, 'clown' => null],
+        29 => ['name' => 'Mime', 'points' => 10, 'stars' => 0, 'bids' => [2, 4, 5, 6, 7], 'effect' => null, 'clown' => null],
+        30 => ['name' => 'Illusionist', 'points' => 13, 'stars' => 0, 'bids' => [2, 4, 6, 8, 10], 'effect' => null, 'clown' => null],
+        31 => ['name' => 'Ringmaster', 'points' => 3, 'stars' => 1, 'bids' => [2, 5, 7, 8], 'effect' => null, 'clown' => null],
+        32 => ['name' => 'Ringmaster', 'points' => 3, 'stars' => 1, 'bids' => [3, 5, 6, 8], 'effect' => null, 'clown' => null],
+        33 => ['name' => 'Ringmaster', 'points' => 3, 'stars' => 1, 'bids' => [3, 4, 7, 9], 'effect' => null, 'clown' => null],
+        34 => ['name' => 'Ringmaster', 'points' => 3, 'stars' => 1, 'bids' => [2, 4, 6, 9], 'effect' => null, 'clown' => null],
+        self::TYPE_GAME_END => ['name' => 'Game End', 'points' => 0, 'stars' => 0, 'bids' => [], 'effect' => null, 'clown' => null],
+    ];
 
-    /**
-     * Your global variables labels:
-     *
-     * Here, you can assign labels to global variables you are using for this game. You can use any number of global
-     * variables with IDs between 10 and 99. If you want to store any type instead of int, use $this->globals instead.
-     *
-     * NOTE: afterward, you can get/set the global variables with `getGameStateValue`, `setGameStateInitialValue` or
-     * `setGameStateValue` functions.
-     */
+    public PlayerCounter $playerMoney;
+    public TableCounter $bank;
+    public ItemManager $cards;
+
     public function __construct()
     {
         parent::__construct();
 
-        $this->playerEnergy = $this->bga->counterFactory->createPlayerCounter('energy');
-
-        self::$CARD_TYPES = [
-            1 => [
-                "card_name" => clienttranslate('Troll'), // ...
+        $this->playerMoney = $this->bga->counterFactory->createPlayerCounter(
+            'money',
+            visibility: CounterVisibility::SELF,
+        );
+        $this->bank = $this->bga->counterFactory->createTableCounter('bank');
+        $this->cards = $this->bga->itemManagerFactory->createItemManager(
+            Card::class,
+            locations: [
+                new ItemLocation('deck'),
+                new ItemLocation('bottom_deck'),
+                new ItemLocation('ringmaster_deck'),
+                new ItemLocation('end_card'),
+                new ItemLocation('hand'),
+                new ItemLocation('attraction'),
+                new ItemLocation('completed'),
+                new ItemLocation('auction'),
+                new ItemLocation('discard'),
             ],
-            2 => [
-                "card_name" => clienttranslate('Goblin'), // ...
-            ],
-            // ...
-        ];
-
-        /* example of notification decorator.
-        // automatically complete notification args when needed
-        $this->bga->notify->addDecorator(function(string $message, array $args) {
-            if (isset($args['player_id']) && !isset($args['player_name']) && str_contains($message, '${player_name}')) {
-                $args['player_name'] = $this->getPlayerNameById($args['player_id']);
-            }
-        
-            if (isset($args['card_id']) && !isset($args['card_name']) && str_contains($message, '${card_name}')) {
-                $args['card_name'] = self::$CARD_TYPES[$args['card_id']]['card_name'];
-                $args['i18n'][] = ['card_name'];
-            }
-            
-            return $args;
-        });*/
+        );
     }
 
-    /**
-     * Compute and return the current game progression.
-     *
-     * The number returned must be an integer between 0 and 100.
-     *
-     * This method is called each time we are in a game state with the "updateGameProgression" property set to true.
-     *
-     * @return int
-     */
-    public function getGameProgression()
+    public function getGameProgression(): int
     {
-        // TODO: compute and return the game progression
-
-        return 0;
+        $remaining = $this->cards->countItemsInLocation('deck');
+        return min(100, (int)round((30 - $remaining) * 100 / 30));
     }
 
-    /**
-     * Migrate database.
-     *
-     * You don't have to care about this until your game has been published on BGA. Once your game is on BGA, this
-     * method is called everytime the system detects a game running with your old database scheme. In this case, if you
-     * change your database scheme, you just have to apply the needed changes in order to update the game database and
-     * allow the game to continue to run with your new version.
-     *
-     * @param int $from_version
-     * @return void
-     */
     public function upgradeTableDb($from_version)
     {
-//       if ($from_version <= 1404301345)
-//       {
-//            // ! important ! Use `DBPREFIX_<table_name>` for all tables
-//
-//            $sql = "ALTER TABLE `DBPREFIX_xxxxxxx` ....";
-//            $this->applyDbUpgradeToAllDB( $sql );
-//       }
-//
-//       if ($from_version <= 1405061421)
-//       {
-//            // ! important ! Use `DBPREFIX_<table_name>` for all tables
-//
-//            $sql = "CREATE TABLE `DBPREFIX_xxxxxxx` ....";
-//            $this->applyDbUpgradeToAllDB( $sql );
-//       }
     }
 
-    /*
-     * Gather all information about current game situation (visible by the current player).
-     *
-     * The method is called each time the game interface is displayed to a player, i.e.:
-     *
-     * - when the game starts
-     * - when a player refreshes the game page (F5)
-     */
-    protected function getAllDatas(int $currentPlayerId): array
+    public function getAllDatas(int $currentPlayerId): array
     {
         $result = [];
-        // WARNING: We must only return information visible by the current player (using $currentPlayerId).
-
-        // Get information about players.
-        // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
-        $result["players"] = $this->getCollectionFromDb(
-            "SELECT `player_id` AS `id`, `player_score` AS `score` FROM `player`"
+        $result['players'] = $this->getCollectionFromDb(
+            'SELECT `player_id` AS `id`, `player_score` AS `score` FROM `player`'
         );
-        $this->playerEnergy->fillResult($result);
+        $this->playerMoney->fillResult($result, currentPlayerId: $currentPlayerId);
+        $this->bank->fillResult($result);
 
-        // TODO: Gather all information about current game situation (visible by player $currentPlayerId).
+        $result['deckCount'] = $this->cards->countItemsInLocation('deck');
+        $result['hand'] = $this->cards->getItemsInLocation(['hand', $currentPlayerId])->values();
+        $result['attractions'] = $this->cards->getItemsInLocation('attraction')->values();
+        $result['completed'] = $this->cards->getItemsInLocation('completed')->values();
+        $result['auction'] = $this->cards->getItemsInLocation('auction')->values();
 
         return $result;
     }
 
-    /**
-     * This method is called only once, when a new game is launched. In this method, you must setup the game
-     *  according to the game rules, so that the game is ready to be played.
-     */
     protected function setupNewGame($players, $options = [])
     {
-        $this->playerEnergy->initDb(array_keys($players), initialValue: 2);
-
-        // Set the colors of the players with HTML color code. The default below is red/green/blue/orange/brown. The
-        // number of colors defined here must correspond to the maximum number of players allowed for the gams.
         $gameinfos = $this->getGameinfos();
-        $default_colors = $gameinfos['player_colors'];
+        $colors = $gameinfos['player_colors'];
+        $values = [];
 
-        foreach ($players as $player_id => $player) {
-            // Now you can access both $player_id and $player array
-            $query_values[] = vsprintf("(%s, '%s', '%s')", [
-                $player_id,
-                array_shift($default_colors),
-                addslashes($player["player_name"]),
+        foreach ($players as $playerId => $player) {
+            $values[] = vsprintf("(%s, '%s', '%s')", [
+                $playerId,
+                array_shift($colors),
+                addslashes($player['player_name']),
             ]);
         }
 
-        // Create players based on generic information.
-        //
-        // NOTE: You can add extra field on player table in the database (see dbmodel.sql) and initialize
-        // additional fields directly here.
-        static::DbQuery(
-            sprintf(
-                "INSERT INTO `player` (`player_id`, `player_color`, `player_name`) VALUES %s",
-                implode(",", $query_values)
-            )
+        $this->DbQuery(
+            'INSERT INTO `player` (`player_id`, `player_color`, `player_name`) VALUES ' . implode(',', $values)
         );
-
-        $this->reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
+        $this->reattributeColorsBasedOnPreferences($players, $gameinfos['player_colors']);
         $this->reloadPlayersBasicInfos();
 
-        // Init global values with their initial values.
+        $this->playerMoney->initDb(array_keys($players), 22);
+        $this->bank->initDb(22);
+        $this->cards->initDb();
 
-        // Init game statistics.
-        //
-        // NOTE: statistics used in this file must be defined in your `stats.inc.php` file.
+        $rows = [];
+        foreach (range(1, 30) as $type) {
+            $rows[] = ['location' => 'deck', 'type' => $type];
+        }
+        foreach (range(31, 34) as $type) {
+            $rows[] = ['location' => 'ringmaster_deck', 'type' => $type];
+        }
+        $rows[] = ['location' => 'end_card', 'type' => self::TYPE_GAME_END];
+        $this->cards->createItems($rows);
 
-        // Dummy content.
-        // $this->tableStats->init('table_teststat1', 0);
-        // $this->playerStats->init('player_teststat1', 0);
+        $this->cards->shuffle('deck');
+        $this->cards->pickItems(4, 'deck', 'bottom_deck');
+        $this->cards->moveAllItemsInLocation('end_card', 'bottom_deck');
+        $this->cards->shuffle('bottom_deck');
+        $this->cards->moveAllItemsInLocation('bottom_deck', 'deck');
 
-        // TODO: Setup the initial game situation here.
+        // [H1] В печатных правилах не указан способ распределения стартовых Рингмастеров.
+        $this->cards->shuffle('ringmaster_deck');
+        foreach (array_keys($players) as $playerId) {
+            $this->cards->pickItem('ringmaster_deck', ['attraction', $playerId]);
+            $this->cards->pickItem('deck', ['hand', $playerId]);
+        }
 
-        // Activate first player once everything has been initialized and ready.
+        // [H2] Порядок ходов BGA заменяет выбор первого игрока при игре за столом.
         $this->activeNextPlayer();
 
-        return PlayerTurn::class;
+        return StartAuction::class;
     }
 
-    /**
-     * Example of debug function.
-     * Here, jump to a state you want to test (by default, jump to next player state)
-     * You can trigger it on Studio using the Debug button on the right of the top bar.
-     */
-    public function debug_goToState(int $state = 3) {
+    public function debug_goToState(int $state = 10)
+    {
         $this->gamestate->jumpToState($state);
     }
-
-    /*
-    Another example of debug function, to easily create situations you want to test.
-    Here, put a card you want to test in your hand (assuming you use the Deck component).
-
-    public function debug_setCardInHand(int $cardType, int $playerId) {
-        $card = array_values($this->cards->getCardsOfType($cardType))[0];
-        $this->cards->moveCard($card['id'], 'hand', $playerId);
-    }
-    */
 }
