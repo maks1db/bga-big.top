@@ -223,7 +223,7 @@ export class Game {
                 <div id="bigtop-hand-area">
                     <h3>${_('Your hand')}</h3>
                     <div id="bigtop-hand"></div>
-                    <div class="bigtop-behind">${_('Coins behind your screen')}: <span id="bigtop-behind-counter"></span></div>
+                    <div class="bigtop-behind" aria-label="${_('Coins behind your screen')}"><span id="bigtop-behind-counter"></span> <span class="bigtop-money-icon" role="img" aria-label="${_('Coins')}"></span></div>
                 </div>
                 <div id="bigtop-player-tables">
                     <button id="bigtop-player-previous" class="bigtop-player-arrow bigtop-player-previous" type="button" hidden>‹</button>

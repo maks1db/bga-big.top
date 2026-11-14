@@ -389,6 +389,10 @@ body,
     text-align: center;
 }
 
+#bigtop-bank-area {
+    display: none;
+}
+
 .bigtop-bank,
 .bigtop-deck-count {
     font-size: 18px;
@@ -582,10 +586,11 @@ html[data-theme="dark"] #bigtop-game {
     font-weight: bold;
     height: 24px;
     justify-content: center;
+    left: 50%;
     pointer-events: none;
     position: absolute;
-    right: -7px;
     top: -7px;
+    transform: translateX(-50%);
     width: 24px;
     z-index: 4;
 }
@@ -594,6 +599,7 @@ html[data-theme="dark"] #bigtop-game {
     background: #1c0b0df5;
     border: 1px solid #e0b75c;
     border-radius: 8px;
+    bottom: calc(100% + 10px);
     box-shadow: 0 4px 14px #000a;
     color: #ffe9b5;
     display: none;
@@ -605,7 +611,6 @@ html[data-theme="dark"] #bigtop-game {
     pointer-events: none;
     position: absolute;
     text-align: left;
-    top: 8px;
     transform: translateX(-50%);
     width: 220px;
     z-index: 7;
@@ -669,8 +674,14 @@ html[data-theme="dark"] #bigtop-game {
 }
 
 .bigtop-behind {
+    align-items: center;
+    display: flex;
+    font-size: 20px;
     font-weight: bold;
-    margin-top: 10px;
+    gap: 4px;
+    position: absolute;
+    right: 12px;
+    top: 8px;
 }
 
 .bigtop-element {
