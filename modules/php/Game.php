@@ -10,6 +10,7 @@ use Bga\GameFramework\Components\ItemManager\ItemLocation;
 use Bga\GameFramework\Components\ItemManager\ItemManager;
 use Bga\GameFramework\SystemException;
 use Bga\GameFramework\UserException;
+use Bga\Games\bigtop\States\NextPlayer;
 use Bga\Games\bigtop\States\StartAuction;
 
 class Game extends \Bga\GameFramework\Table
@@ -179,6 +180,12 @@ class Game extends \Bga\GameFramework\Table
             return false;
         }
 
+        $this->completeCard($card, $playerId);
+        return true;
+    }
+
+    public function completeCard(Card $card, int $playerId): void
+    {
         $this->cards->moveItem($card, ['completed', $playerId]);
         $card->covered = [];
         $this->cards->updateItem($card, 'covered');
@@ -191,7 +198,31 @@ class Game extends \Bga\GameFramework\Table
             'i18n' => ['card_name'],
         ]);
 
-        return true;
+        $effect = self::CARD_TYPES[$card->type]['effect'];
+        if ($effect !== null) {
+            $queue = $this->bga->globals->get('effect_queue', []);
+            $queue[] = $effect;
+            $this->bga->globals->set('effect_queue', $queue);
+        }
+    }
+
+    public function getEmptyCircleTargets(int $playerId): array
+    {
+        $targets = [];
+        $cards = $this->cards->getItemsInLocation(['attraction', $playerId]);
+        foreach ($cards as $card) {
+            $covered = array_map('intval', $card->covered);
+            $empty = [];
+            foreach (self::CARD_TYPES[$card->type]['bids'] as $index => $ignored) {
+                if (!in_array($index, $covered, true)) {
+                    $empty[] = $index;
+                }
+            }
+            if ($empty !== []) {
+                $targets[$card->id] = $empty;
+            }
+        }
+        return $targets;
     }
 
     protected function setupNewGame($players, $options = [])
@@ -253,8 +284,31 @@ class Game extends \Bga\GameFramework\Table
         return StartAuction::class;
     }
 
-    public function debug_goToState(int $state = 10)
+    public function debug_completeCard(int $type = 1, int $playerId = 0): void
     {
-        $this->gamestate->jumpToState($state);
+        if ($this->getBgaEnvironment() !== 'studio') {
+            return;
+        }
+
+        $playerId = $playerId > 0 ? $playerId : (int)$this->getCurrentPlayerId();
+        $card = $this->cards->getItemsByFieldName('type', $type)->first();
+        if ($card === null) {
+            throw new SystemException('Unknown card type');
+        }
+
+        $this->cards->moveItem($card, ['attraction', $playerId]);
+        $card->covered = array_keys(self::CARD_TYPES[$type]['bids']);
+        $this->cards->updateItem($card, 'covered');
+        $this->completeCard($card, $playerId);
+        $this->bga->globals->set('effects_return', NextPlayer::class);
+        $this->setActivePlayer($playerId);
+        $this->gamestate->jumpToState(80);
+    }
+
+    public function debug_goToState(int $state = 10): void
+    {
+        if ($this->getBgaEnvironment() === 'studio') {
+            $this->gamestate->jumpToState($state);
+        }
     }
 }

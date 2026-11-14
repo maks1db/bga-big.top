@@ -75,7 +75,10 @@ class PlaceCoins extends GameState
             'player_name' => $this->game->getPlayerNameById($activePlayerId),
             'card' => $card,
         ]);
-        $this->game->completeIfNeeded($card, $activePlayerId);
+        if ($this->game->completeIfNeeded($card, $activePlayerId)) {
+            $this->globals->set('effects_return', PlaceCoins::class);
+            return ResolveEffects::class;
+        }
 
         return PlaceCoins::class;
     }

@@ -138,6 +138,25 @@ class Payment {
     }
 }
 
+class EffectCoins {
+    constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
+    }
+
+    onEnteringState(args, isCurrentPlayerActive) {
+        this.bga.statusBar.setTitle(isCurrentPlayerActive
+            ? _('${you} must place coins for the immediate effect')
+            : _('${actplayer} must place coins for an immediate effect')
+        );
+        this.game.setCoinMode(isCurrentPlayerActive ? 'effect' : null, args.targets);
+    }
+
+    onLeavingState() {
+        this.game.setCoinMode(null, {});
+    }
+}
+
 export class Game {
     constructor(bga) {
         this.bga = bga;
@@ -145,6 +164,7 @@ export class Game {
         this.bga.states.register('Auction', new Auction(this, bga));
         this.bga.states.register('PlaceCoins', new PlaceCoins(this, bga));
         this.bga.states.register('Payment', new Payment(this, bga));
+        this.bga.states.register('EffectCoins', new EffectCoins(this, bga));
         this.moneyCounters = {};
         this.handSelectionActive = false;
         this.coinMode = null;
@@ -262,7 +282,9 @@ export class Game {
         const card = slot.closest('[data-card-id]');
         const cardId = Number(card.dataset.cardId);
         const circleIndex = Number(slot.dataset.circleIndex);
-        if (this.coinMode === 'payment' || slot.classList.contains('bigtop-covered')) {
+        if (this.coinMode === 'effect') {
+            this.bga.actions.performAction('actEffectPlaceCoin', { cardId, circleIndex });
+        } else if (this.coinMode === 'payment' || slot.classList.contains('bigtop-covered')) {
             this.bga.actions.performAction('actRemoveCoin', { cardId, circleIndex });
         } else {
             this.bga.actions.performAction('actPlaceCoin', { cardId, circleIndex });
@@ -281,7 +303,7 @@ export class Game {
 
         const playerId = this.bga.players.getCurrentPlayerId();
         const root = document.getElementById(`bigtop-attractions-${playerId}`);
-        if (mode === 'place') {
+        if (mode === 'place' || mode === 'effect') {
             Object.entries(this.placeable).forEach(([cardId, circleIndexes]) => {
                 circleIndexes.forEach(circleIndex => {
                     root.querySelector(`[data-card-id="${cardId}"] [data-circle-index="${circleIndex}"]`)
@@ -289,9 +311,11 @@ export class Game {
                 });
             });
         }
-        root.querySelectorAll('.bigtop-coin-slot.bigtop-covered').forEach(slot => {
-            slot.classList.add('bigtop-actionable');
-        });
+        if (mode === 'place' || mode === 'payment') {
+            root.querySelectorAll('.bigtop-coin-slot.bigtop-covered').forEach(slot => {
+                slot.classList.add('bigtop-actionable');
+            });
+        }
     }
 
     createCard(card) {
@@ -394,6 +418,10 @@ export class Game {
     }
 
     notif_gameEndDrawn(args) {
+        document.getElementById('bigtop-deck-count').textContent = args.deckCount;
+    }
+
+    notif_effectCardDrawn(args) {
         document.getElementById('bigtop-deck-count').textContent = args.deckCount;
     }
 

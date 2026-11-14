@@ -78,7 +78,10 @@ class Payment extends GameState
             'bid' => $bid,
             'i18n' => ['card_name'],
         ]);
-        $this->game->completeIfNeeded($card, $activePlayerId);
+        if ($this->game->completeIfNeeded($card, $activePlayerId)) {
+            $this->globals->set('effects_return', NextPlayer::class);
+            return ResolveEffects::class;
+        }
 
         return NextPlayer::class;
     }
