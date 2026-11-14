@@ -220,15 +220,15 @@ export class Game {
                         <div class="bigtop-bank"><span id="bigtop-bank-counter"></span></div>
                     </div>
                 </div>
-                <div id="bigtop-player-tables">
-                    <button id="bigtop-player-previous" class="bigtop-player-arrow bigtop-player-previous" type="button" hidden>‹</button>
-                    <button id="bigtop-player-next" class="bigtop-player-arrow bigtop-player-next" type="button" hidden>›</button>
-                    <div id="bigtop-player-track"></div>
-                </div>
                 <div id="bigtop-hand-area">
                     <h3>${_('Your hand')}</h3>
                     <div id="bigtop-hand"></div>
                     <div class="bigtop-behind">${_('Coins behind your screen')}: <span id="bigtop-behind-counter"></span></div>
+                </div>
+                <div id="bigtop-player-tables">
+                    <button id="bigtop-player-previous" class="bigtop-player-arrow bigtop-player-previous" type="button" hidden>‹</button>
+                    <button id="bigtop-player-next" class="bigtop-player-arrow bigtop-player-next" type="button" hidden>›</button>
+                    <div id="bigtop-player-track"></div>
                 </div>
             </div>
         `);
