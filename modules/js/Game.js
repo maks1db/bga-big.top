@@ -205,7 +205,7 @@ export class Game {
                         <div id="bigtop-deck-card"></div>
                         <div class="bigtop-deck-count">${_('Cards')}: <span id="bigtop-deck-count"></span></div>
                     </div>
-                    <div id="bigtop-auction-area" class="bigtop-common-section">
+                    <div id="bigtop-auction-area" class="bigtop-common-section" hidden>
                         <h3>${_('Current auction')}</h3>
                         <div id="bigtop-auction"></div>
                         <div id="bigtop-current-bid"></div>
@@ -220,15 +220,14 @@ export class Game {
                         <div class="bigtop-bank"><span id="bigtop-bank-counter"></span><span class="bigtop-bank-coin" role="img" aria-label="${_('Coins')}"></span></div>
                     </div>
                 </div>
-                <div id="bigtop-hand-area">
-                    <h3>${_('Your hand')}</h3>
-                    <div id="bigtop-hand"></div>
-                    <div class="bigtop-behind" aria-label="${_('Coins behind your screen')}"><span id="bigtop-behind-counter"></span> <span class="bigtop-money-icon" role="img" aria-label="${_('Coins')}"></span></div>
-                </div>
                 <div id="bigtop-player-tables">
                     <button id="bigtop-player-previous" class="bigtop-player-arrow bigtop-player-previous" type="button" hidden>‹</button>
                     <button id="bigtop-player-next" class="bigtop-player-arrow bigtop-player-next" type="button" hidden>›</button>
                     <div id="bigtop-player-track"></div>
+                </div>
+                <div id="bigtop-hand-area">
+                    <h3>${_('Your hand')}</h3>
+                    <div id="bigtop-hand"></div>
                 </div>
             </div>
         `);
@@ -277,9 +276,16 @@ export class Game {
                 title.style.color = `#${player.color.replace(/^#/, '')}`;
             }
             table.appendChild(title);
+            if (playerId === this.bga.players.getCurrentPlayerId()) {
+                table.insertAdjacentHTML('beforeend', `
+                    <div class="bigtop-behind" aria-label="${_('Coins behind your screen')}"><span id="bigtop-behind-counter"></span> <span class="bigtop-money-icon" role="img" aria-label="${_('Coins')}"></span></div>
+                `);
+            }
             table.insertAdjacentHTML('beforeend', `
-                <div class="bigtop-card-row" id="bigtop-attractions-${playerId}"></div>
-                <div class="bigtop-card-row" id="bigtop-completed-${playerId}"></div>
+                <div class="bigtop-player-cards">
+                    <div class="bigtop-card-row bigtop-completed-row" id="bigtop-completed-${playerId}"></div>
+                    <div class="bigtop-card-row bigtop-attractions-row" id="bigtop-attractions-${playerId}"></div>
+                </div>
             `);
             document.getElementById('bigtop-player-track').appendChild(table);
         });
@@ -302,6 +308,7 @@ export class Game {
         gamedatas.hand.forEach(card => {
             document.getElementById('bigtop-hand').appendChild(this.createCard(card));
         });
+        this.updateAuctionVisibility();
 
         document.getElementById('bigtop-hand').addEventListener('click', event => this.onHandClick(event));
         document.getElementById('bigtop-player-tables').addEventListener('click', event => this.onCoinSlotClick(event));
@@ -683,7 +690,58 @@ export class Game {
         } else {
             this.updateCardElement(element, card);
         }
-        document.getElementById(targetId).appendChild(element);
+
+        const target = document.getElementById(targetId);
+        const animateFromHand = element.parentElement?.id === 'bigtop-hand'
+            && targetId === 'bigtop-auction'
+            && this.bga.gameui.bgaAnimationsActive()
+            && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!animateFromHand) {
+            target.appendChild(element);
+            return;
+        }
+
+        const start = element.getBoundingClientRect();
+        const flyingCard = element.cloneNode(true);
+        flyingCard.classList.add('bigtop-card-flight');
+        flyingCard.removeAttribute('data-card-id');
+        flyingCard.removeAttribute('aria-describedby');
+        flyingCard.setAttribute('aria-hidden', 'true');
+        flyingCard.inert = true;
+        flyingCard.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'));
+        Object.assign(flyingCard.style, {
+            height: `${start.height}px`,
+            left: `${start.left}px`,
+            top: `${start.top}px`,
+            width: `${start.width}px`,
+        });
+
+        const previousVisibility = element.style.visibility;
+        element.style.visibility = 'hidden';
+        target.appendChild(element);
+        const end = element.getBoundingClientRect();
+        document.body.appendChild(flyingCard);
+
+        const deltaX = end.left - start.left;
+        const deltaY = end.top - start.top;
+        const finalScale = end.width / start.width;
+        const middleScale = 1 + (finalScale - 1) / 2 + 0.08;
+        const animation = flyingCard.animate([
+            { transform: 'translate3d(0, 0, 0) scale(1) rotate(0deg)' },
+            {
+                transform: `translate3d(${deltaX / 2}px, ${deltaY / 2 - 48}px, 0) scale(${middleScale}) rotate(-4deg)`,
+                offset: 0.5,
+            },
+            { transform: `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${finalScale}) rotate(0deg)` },
+        ], {
+            duration: 650,
+            easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)',
+        });
+        const finish = () => {
+            flyingCard.remove();
+            element.style.visibility = previousVisibility;
+        };
+        return animation.finished.then(finish, finish);
     }
 
     getBehindMoney() {
@@ -695,6 +753,11 @@ export class Game {
 
     updateBehindMoney() {
         document.getElementById('bigtop-behind-counter').textContent = this.getBehindMoney();
+    }
+
+    updateAuctionVisibility() {
+        const auction = document.getElementById('bigtop-auction');
+        document.getElementById('bigtop-auction-area').hidden = auction.children.length === 0;
     }
 
     updateBid(currentBid, highBidder) {
@@ -738,8 +801,10 @@ export class Game {
     }
 
     notif_auctionCard(args) {
-        this.moveCard(args.card, 'bigtop-auction');
+        document.getElementById('bigtop-auction-area').hidden = false;
+        const movement = this.moveCard(args.card, 'bigtop-auction');
         this.updateBid(0, null);
+        return movement;
     }
 
     notif_bidMade(args) {
@@ -763,10 +828,12 @@ export class Game {
 
     notif_auctionWon(args) {
         this.moveCard(args.card, `bigtop-attractions-${args.player_id}`);
+        this.updateAuctionVisibility();
         this.updateBehindMoney();
     }
 
     notif_auctionDiscarded(args) {
         document.querySelector(`.bigtop-card-frame[data-card-id="${Number(args.card.id)}"]`)?.remove();
+        this.updateAuctionVisibility();
     }
 }
