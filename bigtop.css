@@ -720,13 +720,6 @@ html[data-theme="dark"] #bigtop-game {
     z-index: 5;
 }
 
-#bigtop-hand .bigtop-card-frame.bigtop-card-auction-selected .bigtop-card {
-    background-origin: border-box;
-    border: 3px solid #f6cf67;
-    box-shadow: 0 0 18px #ffd76980;
-    box-sizing: border-box;
-}
-
 .bigtop-card-frame {
     flex: 0 0 180px;
     position: relative;
