@@ -52,7 +52,8 @@ body,
     inset: 0;
     overflow: hidden;
     pointer-events: none;
-    position: absolute;
+    position: fixed;
+    z-index: 0;
 }
 
 .bigtop-layer {
@@ -304,6 +305,12 @@ body,
     min-height: 20px;
 }
 
+#bigtop-player-tables,
+#bigtop-hand-area {
+    position: relative;
+    z-index: 1;
+}
+
 .bigtop-player-table {
     background: #1c0b0dd9;
     border: 1px solid #a67b40;
@@ -430,27 +437,31 @@ html[data-theme="dark"] #bigtop-game {
     transform: translateY(1px);
 }
 
-#bigtop-bid-input {
-    appearance: textfield;
-    background: #fff5d6;
-    border: 2px solid #b47c2f;
-    border-radius: 8px;
+#bigtop-bid-value {
+    align-items: center;
+    background: radial-gradient(circle at 35% 25%, #fff7c9 0%, #f2c85e 35%, #b77520 75%, #6d3513 100%);
+    border: 3px solid #ffe9a6;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #7a4418, 0 4px 10px #0009, inset 0 0 8px #fff3b380;
     box-sizing: border-box;
     color: #351b0d;
-    font-size: 22px;
+    display: inline-flex;
+    font-family: Georgia, serif;
+    font-size: 27px;
     font-weight: bold;
-    height: 40px;
-    max-width: 100px;
-    padding: 4px 6px;
-    text-align: center;
+    height: 56px;
+    justify-content: center;
+    line-height: 1;
+    text-shadow: 0 1px 0 #fff0a6;
     transform-origin: center;
-    width: 76px;
+    width: 56px;
 }
 
-#bigtop-bid-input::-webkit-inner-spin-button,
-#bigtop-bid-input::-webkit-outer-spin-button {
-    appearance: none;
-    margin: 0;
+#bigtop-bid-value::before {
+    content: "$";
+    font-size: 14px;
+    margin-right: 1px;
+    text-shadow: none;
 }
 
 #bigtop-hand-area.bigtop-selectable .bigtop-card {

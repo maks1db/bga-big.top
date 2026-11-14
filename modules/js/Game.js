@@ -65,15 +65,15 @@ class Auction {
 
         const playerId = this.bga.players.getCurrentPlayerId();
         const maxBid = this.game.moneyCounters[playerId]?.getValue() ?? 0;
-        const input = document.getElementById('bigtop-bid-input');
-        input.min = args.minBid;
-        input.max = maxBid;
-        input.value = Math.min(args.minBid, maxBid);
+        const bidValue = document.getElementById('bigtop-bid-value');
+        bidValue.dataset.min = args.minBid;
+        bidValue.dataset.max = maxBid;
+        bidValue.dataset.value = Math.min(args.minBid, maxBid);
         this.game.updateBidStepper();
 
         if (args.minBid <= maxBid) {
             this.bga.statusBar.addActionButton(_('Bid'), () => {
-                this.bga.actions.performAction('actBid', { bid: Number(input.value) });
+                this.bga.actions.performAction('actBid', { bid: Number(bidValue.dataset.value) });
             });
         }
         this.bga.statusBar.addActionButton(
@@ -211,7 +211,7 @@ export class Game {
                         <div id="bigtop-current-bid"></div>
                         <div id="bigtop-bid-controls" hidden>
                             <button id="bigtop-bid-decrease" class="bigtop-bid-step" type="button" aria-label="${_('Decrease bid')}">−</button>
-                            <input id="bigtop-bid-input" type="number" step="1" aria-label="${_('Your bid')}">
+                            <output id="bigtop-bid-value" aria-label="${_('Your bid')}" aria-live="polite"></output>
                             <button id="bigtop-bid-increase" class="bigtop-bid-step" type="button" aria-label="${_('Increase bid')}">+</button>
                         </div>
                     </div>
@@ -288,37 +288,37 @@ export class Game {
     }
 
     setupBidStepper() {
-        const input = document.getElementById('bigtop-bid-input');
+        const bidValue = document.getElementById('bigtop-bid-value');
         document.getElementById('bigtop-bid-decrease').addEventListener('click', () => {
-            this.changeBid(Number(input.value) - 1);
+            this.changeBid(Number(bidValue.dataset.value) - 1);
         });
         document.getElementById('bigtop-bid-increase').addEventListener('click', () => {
-            this.changeBid(Number(input.value) + 1);
+            this.changeBid(Number(bidValue.dataset.value) + 1);
         });
-        input.addEventListener('change', () => this.changeBid(Number(input.value)));
     }
 
     clampBid(value) {
-        const input = document.getElementById('bigtop-bid-input');
-        const min = Number(input.min);
-        const max = Number(input.max);
+        const bidValue = document.getElementById('bigtop-bid-value');
+        const min = Number(bidValue.dataset.min);
+        const max = Number(bidValue.dataset.max);
         const normalized = Number.isFinite(value) ? Math.round(value) : min;
         return Math.min(max, Math.max(min, normalized));
     }
 
     updateBidStepper() {
-        const input = document.getElementById('bigtop-bid-input');
-        const value = this.clampBid(Number(input.value));
-        input.value = value;
+        const bidValue = document.getElementById('bigtop-bid-value');
+        const value = this.clampBid(Number(bidValue.dataset.value));
+        bidValue.dataset.value = value;
+        bidValue.textContent = value;
         this.bidValue = value;
-        document.getElementById('bigtop-bid-decrease').disabled = value <= Number(input.min);
-        document.getElementById('bigtop-bid-increase').disabled = value >= Number(input.max);
+        document.getElementById('bigtop-bid-decrease').disabled = value <= Number(bidValue.dataset.min);
+        document.getElementById('bigtop-bid-increase').disabled = value >= Number(bidValue.dataset.max);
     }
 
     changeBid(value) {
-        const input = document.getElementById('bigtop-bid-input');
-        const previousValue = this.bidValue ?? Number(input.value);
-        input.value = this.clampBid(value);
+        const bidValue = document.getElementById('bigtop-bid-value');
+        const previousValue = this.bidValue ?? Number(bidValue.dataset.value);
+        bidValue.dataset.value = this.clampBid(value);
         this.updateBidStepper();
         if (this.bidValue !== previousValue) {
             this.animateBidValue();
@@ -329,7 +329,7 @@ export class Game {
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             return;
         }
-        const input = document.getElementById('bigtop-bid-input');
+        const bidValue = document.getElementById('bigtop-bid-value');
         const effects = [
             {
                 duration: 620,
@@ -386,9 +386,9 @@ export class Game {
                 ],
             },
         ];
-        input.getAnimations().forEach(animation => animation.cancel());
+        bidValue.getAnimations().forEach(animation => animation.cancel());
         const effect = effects[Math.floor(Math.random() * effects.length)];
-        input.animate(effect.keyframes, {
+        bidValue.animate(effect.keyframes, {
             duration: effect.duration,
             easing: 'ease-in-out',
         });
