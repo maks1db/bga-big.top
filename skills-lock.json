@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "skills": {
+    "board-game-arena": {
+      "source": "rbellec/claude-code-bga",
+      "sourceType": "github",
+      "skillPath": "skills/board-game-arena/SKILL.md",
+      "computedHash": "6a619e0ad122c30ae8850e2acf697047e643d491090d032cf6d0eb15d9e24e3a"
+    }
+  }
+}
