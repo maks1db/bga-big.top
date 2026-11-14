@@ -126,7 +126,7 @@ class Payment {
         );
         this.game.setCoinMode(isCurrentPlayerActive ? 'payment' : null, {});
         if (isCurrentPlayerActive) {
-            const label = _('Pay $${bid}').replace('${bid}', args.bid);
+            const label = _('Pay ${bid}').replace('${bid}', args.bid);
             this.bga.statusBar.addActionButton(
                 label,
                 () => this.bga.actions.performAction('actPay'),
@@ -217,14 +217,14 @@ export class Game {
                     </div>
                     <div id="bigtop-bank-area" class="bigtop-common-section">
                         <h3>${_('Bank')}</h3>
-                        <div class="bigtop-bank"><span id="bigtop-bank-counter"></span> $</div>
+                        <div class="bigtop-bank"><span id="bigtop-bank-counter"></span> <span class="bigtop-money-icon" role="img" aria-label="${_('Coins')}"></span></div>
                     </div>
                 </div>
                 <div id="bigtop-player-tables"></div>
                 <div id="bigtop-hand-area">
                     <h3>${_('Your hand')}</h3>
                     <div id="bigtop-hand"></div>
-                    <div class="bigtop-behind">${_('Coins behind your screen')}: <span id="bigtop-behind-counter"></span> $</div>
+                    <div class="bigtop-behind">${_('Coins behind your screen')}: <span id="bigtop-behind-counter"></span> <span class="bigtop-money-icon" role="img" aria-label="${_('Coins')}"></span></div>
                 </div>
             </div>
         `);
@@ -244,7 +244,7 @@ export class Game {
             const playerId = Number(player.id);
             if (player.money !== undefined) {
                 this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `
-                    <span id="bigtop-money-counter-${playerId}"></span> $
+                    <span id="bigtop-money-counter-${playerId}"></span> <span class="bigtop-money-icon" role="img" aria-label="${_('Coins')}"></span>
                 `);
                 const counter = new ebg.counter();
                 counter.create(`bigtop-money-counter-${playerId}`, {
@@ -260,6 +260,9 @@ export class Game {
             table.className = 'bigtop-player-table';
             const title = document.createElement('h3');
             title.textContent = player.name;
+            if (player.color) {
+                title.style.color = `#${player.color.replace(/^#/, '')}`;
+            }
             table.appendChild(title);
             table.insertAdjacentHTML('beforeend', `
                 <div class="bigtop-card-row" id="bigtop-attractions-${playerId}"></div>
@@ -644,6 +647,14 @@ export class Game {
         document.getElementById('bigtop-behind-counter').textContent = this.getBehindMoney();
     }
 
+    createMoneyIcon() {
+        const icon = document.createElement('span');
+        icon.className = 'bigtop-money-icon';
+        icon.setAttribute('role', 'img');
+        icon.setAttribute('aria-label', _('Coins'));
+        return icon;
+    }
+
     updateBid(currentBid, highBidder) {
         const element = document.getElementById('bigtop-current-bid');
         const bid = Number(currentBid);
@@ -652,7 +663,11 @@ export class Game {
             return;
         }
         const playerName = this.gamedatas.players[highBidder]?.name ?? '';
-        element.textContent = `${_('Current bid')}: $${bid} — ${playerName}`;
+        element.replaceChildren(
+            document.createTextNode(`${_('Current bid')}: ${bid} `),
+            this.createMoneyIcon(),
+            document.createTextNode(` — ${playerName}`),
+        );
     }
 
     notif_moneyChanged(args) {

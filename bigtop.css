@@ -457,11 +457,15 @@ html[data-theme="dark"] #bigtop-game {
     width: 56px;
 }
 
-#bigtop-bid-value::before {
-    content: "$";
-    font-size: 14px;
-    margin-right: 1px;
-    text-shadow: none;
+.bigtop-money-icon {
+    background-image: url('img/elements.png');
+    background-position: 100% 100%;
+    background-repeat: no-repeat;
+    background-size: 300% 200%;
+    display: inline-block;
+    height: 18px;
+    vertical-align: -4px;
+    width: 18px;
 }
 
 #bigtop-hand-area.bigtop-selectable .bigtop-card {
