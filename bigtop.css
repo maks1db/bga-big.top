@@ -324,8 +324,9 @@ body,
 }
 
 #bigtop-player-track {
+    align-items: flex-start;
     display: flex;
-    transition: transform 450ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition: transform 450ms cubic-bezier(0.22, 0.61, 0.36, 1), height 250ms ease;
     will-change: transform;
 }
 
@@ -347,19 +348,28 @@ body,
     flex-direction: column;
 }
 
+.bigtop-completed-area {
+    display: none;
+}
+
+.bigtop-completed-area:has(.bigtop-completed-row:not(:empty)) {
+    border-top: 2px dashed #a67b40;
+    display: block;
+    margin-top: 16px;
+    padding-top: 12px;
+}
+
+.bigtop-completed-area h3 {
+    color: #ffe9b5;
+    font-size: 14px;
+    margin: 0 0 8px;
+    text-align: center;
+    text-shadow: 0 2px 3px #000;
+}
+
 .bigtop-completed-row {
     flex: 0 0 100%;
     flex-direction: row;
-}
-
-.bigtop-completed-row:not(:empty) {
-    border-top: 2px dashed #a67b40;
-    margin-top: 16px;
-    padding-top: 16px;
-}
-
-.bigtop-completed-row:empty {
-    display: none;
 }
 
 .bigtop-attractions-row {
@@ -688,6 +698,22 @@ html[data-theme="dark"] #bigtop-game {
 
 .bigtop-card-flight .bigtop-card-tooltip {
     display: none;
+}
+
+.bigtop-payment-coin {
+    background-image: url('img/elements-50.png');
+    background-position: 100% 100%;
+    background-repeat: no-repeat;
+    background-size: 300% 200%;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px #0008;
+    height: 30px;
+    pointer-events: none;
+    position: fixed;
+    transform-origin: center;
+    width: 30px;
+    will-change: transform, opacity;
+    z-index: 1001;
 }
 
 .bigtop-card-tooltip {
