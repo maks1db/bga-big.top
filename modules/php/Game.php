@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Bga\Games\bigtop;
 
-use Bga\GameFramework\Components\CounterVisibility;
 use Bga\GameFramework\Components\Counters\PlayerCounter;
 use Bga\GameFramework\Components\Counters\TableCounter;
 use Bga\GameFramework\Components\ItemManager\ItemLocation;
 use Bga\GameFramework\Components\ItemManager\ItemManager;
+use Bga\GameFramework\SystemException;
 use Bga\GameFramework\UserException;
 use Bga\Games\bigtop\States\StartAuction;
 
@@ -62,15 +62,13 @@ class Game extends \Bga\GameFramework\Table
     {
         parent::__construct();
 
-        $this->playerMoney = $this->bga->counterFactory->createPlayerCounter(
-            'money',
-            visibility: CounterVisibility::SELF,
-        );
+        $this->playerMoney = $this->bga->counterFactory->createPlayerCounter('money');
         $this->bank = $this->bga->counterFactory->createTableCounter('bank');
         $this->cards = $this->bga->itemManagerFactory->createItemManager(
             Card::class,
             locations: [
                 new ItemLocation('deck'),
+                new ItemLocation('top_deck'),
                 new ItemLocation('bottom_deck'),
                 new ItemLocation('ringmaster_deck'),
                 new ItemLocation('end_card'),
@@ -99,7 +97,7 @@ class Game extends \Bga\GameFramework\Table
         $result['players'] = $this->getCollectionFromDb(
             'SELECT `player_id` AS `id`, `player_score` AS `score` FROM `player`'
         );
-        $this->playerMoney->fillResult($result, currentPlayerId: $currentPlayerId);
+        $result['players'][$currentPlayerId]['money'] = $this->playerMoney->get($currentPlayerId);
         $this->bank->fillResult($result);
 
         $result['cardTypes'] = self::CARD_TYPES;
@@ -110,6 +108,24 @@ class Game extends \Bga\GameFramework\Table
         $result['auction'] = $this->cards->getItemsInLocation('auction')->values();
 
         return $result;
+    }
+
+    public function setActivePlayer(int $playerId): void
+    {
+        $playerIds = array_map('intval', array_keys($this->loadPlayersBasicInfos()));
+        foreach ($playerIds as $ignored) {
+            if ((int)$this->activeNextPlayer() === $playerId) {
+                return;
+            }
+        }
+        throw new SystemException('Cannot activate an unknown player');
+    }
+
+    public function changeMoney(int $playerId, int $delta): int
+    {
+        $value = $this->playerMoney->inc($playerId, $delta, null);
+        $this->bga->notify->player($playerId, 'moneyChanged', '', ['value' => $value]);
+        return $value;
     }
 
     public function getCoinsOnCards(int $playerId): int
@@ -216,7 +232,13 @@ class Game extends \Bga\GameFramework\Table
         $this->cards->pickItems(4, 'deck', 'bottom_deck');
         $this->cards->moveAllItemsInLocation('end_card', 'bottom_deck');
         $this->cards->shuffle('bottom_deck');
-        $this->cards->moveAllItemsInLocation('bottom_deck', 'deck');
+        $this->cards->moveAllItemsInLocation('deck', 'top_deck');
+        foreach ($this->cards->getItemsInLocation('bottom_deck') as $card) {
+            $this->cards->moveItem($card, 'deck');
+        }
+        foreach ($this->cards->getItemsInLocation('top_deck') as $card) {
+            $this->cards->moveItem($card, 'deck');
+        }
 
         // [H1] В печатных правилах не указан способ распределения стартовых Рингмастеров.
         $this->cards->shuffle('ringmaster_deck');

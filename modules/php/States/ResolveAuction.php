@@ -35,7 +35,7 @@ class ResolveAuction extends GameState
         }
 
         $winnerId = (int)$winnerId;
-        $this->game->changeActivePlayer($winnerId);
+        $this->game->setActivePlayer($winnerId);
         return Payment::class;
     }
 }

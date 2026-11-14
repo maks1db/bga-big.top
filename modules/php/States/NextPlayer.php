@@ -18,7 +18,7 @@ class NextPlayer extends GameState
     public function onEnteringState(): string
     {
         $auctioneerId = (int)$this->globals->get('auctioneer_id');
-        $this->game->changeActivePlayer($auctioneerId);
+        $this->game->setActivePlayer($auctioneerId);
         $this->game->activeNextPlayer();
 
         return StartAuction::class;

@@ -380,6 +380,12 @@ export class Game {
         element.textContent = `${_('Current bid')}: $${bid} — ${playerName}`;
     }
 
+    notif_moneyChanged(args) {
+        const playerId = this.bga.players.getCurrentPlayerId();
+        this.moneyCounters[playerId]?.toValue(Number(args.value));
+        this.updateBehindMoney();
+    }
+
     notif_cardDrawn(args) {
         document.getElementById('bigtop-deck-count').textContent = args.deckCount;
         if (args.card) {

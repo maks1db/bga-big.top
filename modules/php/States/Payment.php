@@ -51,11 +51,11 @@ class Payment extends GameState
         }
 
         $auctioneerId = (int)$this->globals->get('auctioneer_id');
-        $this->game->playerMoney->inc($activePlayerId, -$bid, new NotificationMessage());
+        $this->game->changeMoney($activePlayerId, -$bid);
         if ($activePlayerId === $auctioneerId) {
             $this->game->bank->inc($bid, new NotificationMessage());
         } else {
-            $this->game->playerMoney->inc($auctioneerId, $bid, new NotificationMessage());
+            $this->game->changeMoney($auctioneerId, $bid);
         }
 
         $card = $this->game->cards->getItemOnTop('auction');
@@ -65,7 +65,7 @@ class Payment extends GameState
 
         $bankCoins = count($card->covered);
         if ($bankCoins > 0) {
-            $this->game->playerMoney->inc($activePlayerId, $bankCoins, new NotificationMessage());
+            $this->game->changeMoney($activePlayerId, $bankCoins);
         }
         $this->game->cards->moveItem($card, ['attraction', $activePlayerId]);
 
