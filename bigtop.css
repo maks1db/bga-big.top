@@ -481,6 +481,21 @@ html[data-theme="dark"] #bigtop-game {
     }
 }
 
+@media (max-width: 999px) {
+    #bigtop-common {
+        align-items: center;
+        flex-direction: column;
+    }
+
+    #bigtop-deck {
+        align-self: flex-start;
+    }
+
+    #bigtop-auction-area {
+        align-self: center;
+    }
+}
+
 @media (min-width: 1000px) {
     #bigtop-common {
         display: block;
