@@ -607,7 +607,7 @@ html[data-theme="dark"] #bigtop-game {
 
 @media (max-width: 740px) {
     #bigtop-game {
-        --bigtop-ring-w: min(97vw, 118vh);
+        --bigtop-ring-w: max(700px, min(97vw, 118vh));
         --bigtop-squash: 0.62;
     }
 
