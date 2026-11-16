@@ -383,21 +383,15 @@ body,
 }
 
 .bigtop-completed-arrow {
-    align-items: center;
-    display: inline-flex;
-    height: 14px;
-    justify-content: center;
+    background-image: url('img/arrow.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    display: inline-block;
+    flex: 0 0 20px;
+    height: 20px;
     transition: transform 250ms ease;
-    width: 12px;
-}
-
-.bigtop-completed-arrow::before {
-    border-bottom: 2px solid currentColor;
-    border-right: 2px solid currentColor;
-    content: '';
-    height: 8px;
-    transform: translateY(-2px) rotate(45deg);
-    width: 8px;
+    width: 20px;
 }
 
 .bigtop-completed-area.bigtop-expanded .bigtop-completed-arrow {
