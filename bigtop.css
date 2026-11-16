@@ -999,3 +999,21 @@ html[data-theme="dark"] #bigtop-game {
 .bigtop-coin-1 {
     background-position: -512px -256px;
 }
+
+.bigtop-final-score-cell {
+    line-height: 1.4;
+    min-width: 180px;
+    padding: 4px 8px;
+    text-align: left;
+}
+
+.bigtop-final-score-cell > strong {
+    font-size: 1.15em;
+}
+
+.bigtop-final-score-total {
+    background: rgba(246, 207, 103, 0.24);
+    font-size: 1.15em;
+    padding: 6px 8px;
+    text-align: center;
+}
