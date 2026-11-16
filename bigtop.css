@@ -943,7 +943,7 @@ html[data-theme="dark"] #bigtop-game {
 }
 
 .bigtop-behind {
-    color: #3a1d08;
+    color: #ffd76e;
     display: grid;
     font-size: 32px;
     font-weight: bold;
@@ -953,7 +953,7 @@ html[data-theme="dark"] #bigtop-game {
     position: absolute;
     right: 12px;
     text-align: center;
-    text-shadow: 0 1px 1px #ffdfa0;
+    text-shadow: 0 2px 3px #000;
     top: 8px;
 }
 
