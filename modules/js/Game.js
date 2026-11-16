@@ -786,10 +786,52 @@ export class Game {
             tooltip.textContent = help;
             element.appendChild(tooltip);
             element.setAttribute('aria-describedby', tooltip.id);
+            element.addEventListener('pointerenter', () => this.showCardTooltip(element));
+            element.addEventListener('pointerleave', () => this.hideCardTooltip(element));
+            element.addEventListener('focus', () => this.showCardTooltip(element));
+            element.addEventListener('blur', () => this.hideCardTooltip(element));
         }
         this.updateCardElement(element, card);
 
         return element;
+    }
+
+    showCardTooltip(element) {
+        if (!element.closest('.bigtop-attractions-row')) {
+            return;
+        }
+        const tooltip = document.getElementById(`bigtop-card-help-${element.dataset.cardId}`);
+        if (!tooltip) {
+            return;
+        }
+
+        document.body.appendChild(tooltip);
+        tooltip.classList.add('bigtop-card-tooltip-floating');
+        tooltip.style.left = '0px';
+        tooltip.style.top = '0px';
+        const cardRect = element.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const left = Math.max(8, Math.min(
+            window.innerWidth - tooltipRect.width - 8,
+            cardRect.left + cardRect.width / 2 - tooltipRect.width / 2,
+        ));
+        const above = cardRect.top - tooltipRect.height - 10;
+        const top = above >= 8 ? above : cardRect.bottom + 10;
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+    }
+
+    hideCardTooltip(element) {
+        const tooltip = document.getElementById(`bigtop-card-help-${element.dataset.cardId}`);
+        if (!tooltip?.classList.contains('bigtop-card-tooltip-floating')
+            || element.matches(':hover')
+            || element.contains(document.activeElement)) {
+            return;
+        }
+        tooltip.classList.remove('bigtop-card-tooltip-floating');
+        tooltip.style.left = '';
+        tooltip.style.top = '';
+        element.appendChild(tooltip);
     }
 
     updateCardElement(element, card) {

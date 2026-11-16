@@ -823,6 +823,14 @@ html[data-theme="dark"] #bigtop-game {
     display: block;
 }
 
+.bigtop-card-tooltip.bigtop-card-tooltip-floating {
+    bottom: auto;
+    display: block;
+    position: fixed;
+    transform: none;
+    z-index: 1002;
+}
+
 .bigtop-card-has-help:focus-visible {
     outline: 3px solid #ffe08a;
     outline-offset: 3px;
