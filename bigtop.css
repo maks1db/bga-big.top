@@ -697,8 +697,8 @@ html[data-theme="dark"] #bigtop-game {
 
 .bigtop-behind .bigtop-money-icon {
     background-image: url('img/elements-50.png');
-    height: 36px;
-    width: 36px;
+    height: 52px;
+    width: 52px;
 }
 
 #bigtop-hand-area.bigtop-selectable .bigtop-card {
@@ -910,12 +910,18 @@ html[data-theme="dark"] #bigtop-game {
 
 .bigtop-behind {
     align-items: center;
+    color: #fff3cf;
     display: flex;
-    font-size: 40px;
+    flex-direction: column;
+    font-size: 32px;
     font-weight: bold;
-    gap: 4px;
+    gap: 2px;
+    line-height: 1;
+    min-width: 52px;
     position: absolute;
     right: 12px;
+    text-align: center;
+    text-shadow: 0 2px 3px #000;
     top: 8px;
 }
 
