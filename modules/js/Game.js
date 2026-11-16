@@ -14,6 +14,7 @@
 /**
  * @typedef {Gamedatas<bigtopPlayer> & {
  *   bank: number,
+ *   auctioneer: number,
  *   cardTypes: Object,
  *   deckCount: number,
  *   hand: bigtopCard[],
@@ -275,6 +276,9 @@ export class Game {
         ];
         Object.values(gamedatas.players).forEach(player => {
             const playerId = Number(player.id);
+            this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `
+                <span id="bigtop-player-auctioneer-${playerId}" class="bigtop-player-auctioneer bigtop-auctioneer-token" data-player-id="${playerId}" role="img" aria-label="${_('Auctioneer')}" title="${_('Auctioneer')}" hidden></span>
+            `);
             if (player.money !== undefined) {
                 this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `
                     <span class="bigtop-player-bank">${_('Bank')}: <span id="bigtop-money-counter-${playerId}"></span> <span class="bigtop-money-icon" role="img" aria-label="${_('Coins')}"></span></span>
@@ -320,6 +324,7 @@ export class Game {
             `);
             document.getElementById('bigtop-player-track').appendChild(table);
         });
+        this.updateAuctioneer(gamedatas.auctioneer);
 
         this.playerIds.forEach(playerId => {
             document.getElementById('bigtop-player-track').appendChild(
@@ -406,6 +411,12 @@ export class Game {
             const verticalMargins = parseFloat(style.marginTop) + parseFloat(style.marginBottom);
             document.getElementById('bigtop-player-track').style.height = `${table.offsetHeight + verticalMargins}px`;
         }
+    }
+
+    updateAuctioneer(playerId) {
+        document.querySelectorAll('.bigtop-player-auctioneer').forEach(token => {
+            token.hidden = Number(token.dataset.playerId) !== Number(playerId);
+        });
     }
 
     updateCompletedCount(playerId) {
@@ -1044,6 +1055,7 @@ export class Game {
     }
 
     notif_cardDrawn(args) {
+        this.updateAuctioneer(args.player_id);
         document.getElementById('bigtop-deck-count').textContent = args.deckCount;
         if (args.card) {
             document.getElementById('bigtop-hand').appendChild(this.createCard(args.card));
@@ -1051,6 +1063,7 @@ export class Game {
     }
 
     notif_gameEndDrawn(args) {
+        this.updateAuctioneer(args.player_id);
         document.getElementById('bigtop-deck-count').textContent = args.deckCount;
     }
 
