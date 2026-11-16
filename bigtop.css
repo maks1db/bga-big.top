@@ -537,8 +537,13 @@ html[data-theme="dark"] #bigtop-game {
     }
 
     .bigtop-card-frame.bigtop-card-coin-action .bigtop-card,
+    .bigtop-coin-card-arrow,
     .bigtop-coin-slot.bigtop-actionable:not(.bigtop-covered)::before {
         animation: none !important;
+    }
+
+    .bigtop-coin-card-arrow {
+        transition: none !important;
     }
 
     .bigtop-coin-slot.bigtop-actionable:not(.bigtop-covered)::before {
@@ -731,6 +736,34 @@ html[data-theme="dark"] #bigtop-game {
 @keyframes bigtop-card-coin-glow {
     0%, 100% { box-shadow: 0 0 8px #ffd76940; }
     50% { box-shadow: 0 0 20px #ffd769a0; }
+}
+
+.bigtop-coin-card-arrow {
+    background-image: url('img/arrow.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    filter: drop-shadow(0 3px 4px #0009);
+    height: 40px;
+    left: 50%;
+    margin-left: -20px;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 4px;
+    transition: opacity 240ms ease;
+    width: 40px;
+    z-index: 6;
+}
+
+.bigtop-card-coin-action:has(.bigtop-coin-slot.bigtop-actionable:not(.bigtop-covered)) > .bigtop-coin-card-arrow {
+    animation: bigtop-coin-card-arrow-bob 1.1s ease-in-out infinite;
+    opacity: 1;
+}
+
+@keyframes bigtop-coin-card-arrow-bob {
+    0%, 100% { transform: translateY(0) scale(0.92); }
+    50% { transform: translateY(8px) scale(1.06); }
 }
 
 .bigtop-card-flight {

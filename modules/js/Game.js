@@ -732,6 +732,11 @@ export class Game {
         art.setAttribute('aria-label', type === 0 ? _('Face-down attraction card') : `${_('Card')} ${type}`);
         element.appendChild(art);
 
+        const arrow = document.createElement('span');
+        arrow.className = 'bigtop-coin-card-arrow';
+        arrow.setAttribute('aria-hidden', 'true');
+        element.appendChild(arrow);
+
         const slots = document.createElement('div');
         slots.className = 'bigtop-coin-slots';
         const bids = this.cardTypes[type]?.bids ?? [];
