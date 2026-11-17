@@ -225,6 +225,10 @@ export class Game {
                         <div class="bigtop-deck-count">${_('Cards')}: <span id="bigtop-deck-count"></span></div>
                     </div>
                     <div id="bigtop-auction-area" class="bigtop-common-section" hidden>
+                        <div id="bigtop-auction-owner" class="bigtop-auction-owner">
+                            <span class="bigtop-auction-owner-token bigtop-auctioneer-token" role="img" aria-label="${_('Auctioneer')}" title="${_('Auctioneer')}"></span>
+                            <span id="bigtop-auction-owner-name"></span>
+                        </div>
                         <div id="bigtop-auction"></div>
                         <div id="bigtop-current-bid"></div>
                         <div id="bigtop-bid-controls" hidden>
@@ -413,6 +417,11 @@ export class Game {
         document.querySelectorAll('.bigtop-player-auctioneer').forEach(token => {
             token.hidden = Number(token.dataset.playerId) !== Number(playerId);
         });
+        const player = Object.values(this.gamedatas.players)
+            .find(candidate => Number(candidate.id) === Number(playerId));
+        const ownerName = document.getElementById('bigtop-auction-owner-name');
+        ownerName.textContent = player?.name ?? '';
+        ownerName.style.color = player?.color ? `#${player.color.replace(/^#/, '')}` : '';
     }
 
     updateCompletedCount(playerId) {

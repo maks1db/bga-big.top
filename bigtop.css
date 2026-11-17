@@ -56,6 +56,38 @@ body,
     display: none;
 }
 
+.bigtop-auction-owner {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    height: 40px;
+    justify-content: center;
+    left: 50%;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    width: max-content;
+}
+
+.bigtop-auction-owner-token.bigtop-auctioneer-token {
+    background-image: url('img/elements-50.png');
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 300% 200%;
+    filter: drop-shadow(0 3px 3px #0008);
+    height: 40px;
+    transform: perspective(120px) rotateY(-16deg);
+    width: 40px;
+}
+
+#bigtop-auction-owner-name {
+    font-size: 20px;
+    font-weight: bold;
+    text-shadow: 0 2px 3px #000;
+}
+
 .bigtop-scene {
     inset: 0;
     overflow: hidden;
