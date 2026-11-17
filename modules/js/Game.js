@@ -319,6 +319,10 @@ export class Game {
                     <div class="bigtop-card-row bigtop-attractions-row" id="bigtop-attractions-${playerId}"></div>
                     <div class="bigtop-completed-area">
                         <h3 class="bigtop-completed-heading">
+                            <span class="bigtop-completed-stars" title="${_('Stars on completed attractions')}">
+                                <span class="bigtop-completed-star-icon" role="img" aria-label="${_('Stars')}"></span>
+                                <span id="bigtop-completed-stars-${playerId}">0</span>
+                            </span>
                             <button class="bigtop-completed-toggle" type="button" data-player-id="${playerId}" aria-expanded="false" aria-controls="bigtop-completed-content-${playerId}">
                                 <span>${_('Completed')} (<span id="bigtop-completed-count-${playerId}">0</span>)</span>
                                 <span class="bigtop-completed-arrow" aria-hidden="true"></span>
@@ -441,8 +445,13 @@ export class Game {
     }
 
     updateCompletedCount(playerId) {
-        const count = document.getElementById(`bigtop-completed-${playerId}`).children.length;
-        document.getElementById(`bigtop-completed-count-${playerId}`).textContent = count;
+        const cards = [...document.getElementById(`bigtop-completed-${playerId}`).children];
+        document.getElementById(`bigtop-completed-count-${playerId}`).textContent = cards.length;
+        const stars = cards.reduce(
+            (total, card) => total + Number(this.cardTypes[card.dataset.cardType]?.stars ?? 0),
+            0,
+        );
+        document.getElementById(`bigtop-completed-stars-${playerId}`).textContent = stars;
     }
 
     toggleCompletedArea(playerId) {

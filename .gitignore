@@ -5,4 +5,5 @@ __pycache__/
 *.pdf
 img/*.png
 !img/arrow.png
+!img/star.png
 misc/*.md
