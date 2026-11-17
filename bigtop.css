@@ -83,8 +83,10 @@ body,
 }
 
 #bigtop-auction-owner-name {
+    -webkit-text-stroke: 1px #ffe9b5;
     font-size: 20px;
     font-weight: bold;
+    paint-order: stroke fill;
     text-shadow: 0 2px 3px #000;
 }
 
