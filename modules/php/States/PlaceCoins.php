@@ -17,6 +17,11 @@ class PlaceCoins extends GameState
         parent::__construct($game, id: 60, type: StateType::ACTIVE_PLAYER);
     }
 
+    public function onEnteringState(int $activePlayerId): ?string
+    {
+        return $this->getArgs($activePlayerId)['canPlace'] ? null : NextBid::class;
+    }
+
     public function getArgs(int $activePlayerId): array
     {
         $placedCardIds = array_map('intval', $this->globals->get('placed_card_ids', []));
@@ -48,6 +53,7 @@ class PlaceCoins extends GameState
         return [
             'placeable' => $placeable,
             'removable' => $removable,
+            'canPlace' => $placeable !== [] && $this->game->getBehindMoney($activePlayerId) >= 1,
         ];
     }
 
@@ -80,7 +86,7 @@ class PlaceCoins extends GameState
             return ResolveEffects::class;
         }
 
-        return PlaceCoins::class;
+        return $this->getArgs($activePlayerId)['canPlace'] ? PlaceCoins::class : NextBid::class;
     }
 
     #[PossibleAction]

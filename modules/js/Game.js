@@ -102,26 +102,22 @@ class PlaceCoins {
             : _('${actplayer} may place or take back coins')
         );
         this.game.setCoinMode(isCurrentPlayerActive ? 'place' : null, args.placeable);
-        if (isCurrentPlayerActive) {
+        if (isCurrentPlayerActive && args.canPlace) {
             this.bga.statusBar.addActionButton(
                 _('Continue auction'),
                 async () => {
-                    const canPlaceCoins = Object.values(this.game.placeable)
-                        .some(circleIndexes => circleIndexes.length > 0);
-                    if (canPlaceCoins) {
-                        const choicePromise = this.bga.dialogs.multipleChoice(
-                            _('You can still place coins on your cards. Continue auction?'),
-                            {
-                                continue: _('Continue'),
-                                cancel: _('Cancel'),
-                            },
-                        );
-                        document.querySelector('.multiplechoice_btn[data-key="cancel"]')
-                            ?.classList.replace('bgabutton_blue', 'bgabutton_gray');
-                        const choice = await choicePromise;
-                        if (choice !== 'continue') {
-                            return;
-                        }
+                    const choicePromise = this.bga.dialogs.multipleChoice(
+                        _('You can still place coins on your cards. Continue auction?'),
+                        {
+                            continue: _('Continue'),
+                            cancel: _('Cancel'),
+                        },
+                    );
+                    document.querySelector('.multiplechoice_btn[data-key="cancel"]')
+                        ?.classList.replace('bgabutton_blue', 'bgabutton_gray');
+                    const choice = await choicePromise;
+                    if (choice !== 'continue') {
+                        return;
                     }
                     this.bga.actions.performAction('actFinishPlacement');
                 },
