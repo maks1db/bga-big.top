@@ -48,10 +48,10 @@ class Game extends \Bga\GameFramework\Table
         28 => ['name' => 'Ring of Fire', 'points' => 20, 'stars' => 1, 'bids' => [8, 9, 11, 13], 'effect' => null, 'clown' => null],
         29 => ['name' => 'Mime', 'points' => 10, 'stars' => 0, 'bids' => [2, 4, 5, 6, 7], 'effect' => null, 'clown' => null],
         30 => ['name' => 'Illusionist', 'points' => 13, 'stars' => 0, 'bids' => [2, 4, 6, 8, 10], 'effect' => null, 'clown' => null],
-        31 => ['name' => 'Ringmaster', 'points' => 3, 'stars' => 1, 'bids' => [2, 5, 7, 8], 'effect' => null, 'clown' => null],
-        32 => ['name' => 'Ringmaster', 'points' => 3, 'stars' => 1, 'bids' => [3, 5, 6, 8], 'effect' => null, 'clown' => null],
-        33 => ['name' => 'Ringmaster', 'points' => 3, 'stars' => 1, 'bids' => [3, 4, 7, 9], 'effect' => null, 'clown' => null],
-        34 => ['name' => 'Ringmaster', 'points' => 3, 'stars' => 1, 'bids' => [2, 4, 6, 9], 'effect' => null, 'clown' => null],
+        31 => ['name' => 'Ringmaster', 'points' => 3, 'stars' => 0, 'bids' => [2, 5, 7, 8], 'effect' => null, 'clown' => null],
+        32 => ['name' => 'Ringmaster', 'points' => 3, 'stars' => 0, 'bids' => [3, 5, 6, 8], 'effect' => null, 'clown' => null],
+        33 => ['name' => 'Ringmaster', 'points' => 3, 'stars' => 0, 'bids' => [3, 4, 7, 9], 'effect' => null, 'clown' => null],
+        34 => ['name' => 'Ringmaster', 'points' => 3, 'stars' => 0, 'bids' => [2, 4, 6, 9], 'effect' => null, 'clown' => null],
         self::TYPE_GAME_END => ['name' => 'Game End', 'points' => 0, 'stars' => 0, 'bids' => [], 'effect' => null, 'clown' => null],
     ];
 
