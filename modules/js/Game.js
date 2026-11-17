@@ -1067,6 +1067,63 @@ export class Game {
         coins.forEach(coin => coin.remove());
     }
 
+    async animateCompletedCoins(playerId, cardId) {
+        const element = document.querySelector(`.bigtop-card-frame[data-card-id="${Number(cardId)}"]`);
+        const slots = [...(element?.querySelectorAll('.bigtop-coin-slot.bigtop-covered') ?? [])];
+        const target = document.querySelector(`#bigtop-player-table-${playerId} .bigtop-behind`)
+            ?? this.bga.playerPanels.getElement(playerId)?.querySelector('.bigtop-player-bank')
+            ?? document.querySelector(`#bigtop-player-table-${playerId} > h3`);
+        if (!element || slots.length === 0 || !target
+            || !this.bga.gameui.bgaAnimationsActive()
+            || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return;
+        }
+
+        const targetRect = target.getBoundingClientRect();
+        const targetX = targetRect.left + targetRect.width / 2;
+        const targetY = targetRect.top + targetRect.height / 2;
+        const coins = [];
+        const animations = [];
+        slots.forEach((slot, index) => {
+            const rect = slot.getBoundingClientRect();
+            const startX = rect.left + rect.width / 2;
+            const startY = rect.top + rect.height / 2;
+            const deltaX = targetX - startX;
+            const deltaY = targetY - startY;
+            const coin = document.createElement('span');
+            coin.className = 'bigtop-payment-coin bigtop-completion-coin';
+            coin.setAttribute('aria-hidden', 'true');
+            Object.assign(coin.style, {
+                left: `${startX}px`,
+                top: `${startY}px`,
+            });
+            document.body.appendChild(coin);
+            coins.push(coin);
+            slot.style.visibility = 'hidden';
+            animations.push(coin.animate([
+                { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                {
+                    transform: `translate(${deltaX / 2}px, ${deltaY / 2 - 36}px) translate(-50%, -50%) scale(0.85)`,
+                    opacity: 1,
+                    offset: 0.5,
+                },
+                {
+                    transform: `translate(${deltaX}px, ${deltaY}px) translate(-50%, -50%) scale(0.3)`,
+                    opacity: 0,
+                },
+            ], {
+                delay: index * 70,
+                duration: 700,
+                easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)',
+                fill: 'both',
+            }));
+        });
+
+        await Promise.all(animations.map(animation => animation.finished.catch(() => {})));
+        coins.forEach(coin => coin.remove());
+        slots.forEach(slot => { slot.style.visibility = ''; });
+    }
+
     moveCard(card, targetId) {
         this.hideAllCardTooltips();
         let element = document.querySelector(`.bigtop-card-frame[data-card-id="${Number(card.id)}"]`);
@@ -1079,7 +1136,8 @@ export class Game {
         const target = document.getElementById(targetId);
         const sourceId = element.parentElement?.id;
         const animatedRoute = (sourceId === 'bigtop-hand' && targetId === 'bigtop-auction')
-            || (sourceId === 'bigtop-auction' && targetId.startsWith('bigtop-attractions-'));
+            || (sourceId === 'bigtop-auction' && targetId.startsWith('bigtop-attractions-'))
+            || (sourceId?.startsWith('bigtop-attractions-') && targetId.startsWith('bigtop-completed-'));
         const shouldAnimate = animatedRoute
             && this.bga.gameui.bgaAnimationsActive()
             && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1108,7 +1166,19 @@ export class Game {
         element.style.visibility = 'hidden';
         target.appendChild(element);
         this.updatePlayerSliderHeight();
-        const end = element.getBoundingClientRect();
+        const completedContent = target.closest('.bigtop-completed-content');
+        const collapsedTarget = targetId.startsWith('bigtop-completed-') && completedContent?.hidden;
+        let end = element.getBoundingClientRect();
+        if (collapsedTarget) {
+            const headingRect = target.closest('.bigtop-completed-area')
+                .querySelector('.bigtop-completed-heading').getBoundingClientRect();
+            const width = start.width * 0.35;
+            end = {
+                left: headingRect.left + headingRect.width / 2 - width / 2,
+                top: headingRect.top + headingRect.height / 2 - start.height * 0.35 / 2,
+                width,
+            };
+        }
         document.body.appendChild(flyingCard);
 
         const deltaX = end.left - start.left;
@@ -1116,12 +1186,16 @@ export class Game {
         const finalScale = end.width / start.width;
         const middleScale = 1 + (finalScale - 1) / 2 + 0.08;
         const animation = flyingCard.animate([
-            { transform: 'translate3d(0, 0, 0) scale(1) rotate(0deg)' },
+            { transform: 'translate3d(0, 0, 0) scale(1) rotate(0deg)', opacity: 1 },
             {
                 transform: `translate3d(${deltaX / 2}px, ${deltaY / 2 - 48}px, 0) scale(${middleScale}) rotate(-4deg)`,
+                opacity: 1,
                 offset: 0.5,
             },
-            { transform: `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${finalScale}) rotate(0deg)` },
+            {
+                transform: `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${finalScale}) rotate(0deg)`,
+                opacity: collapsedTarget ? 0 : 1,
+            },
         ], {
             duration: 650,
             easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)',
@@ -1244,10 +1318,12 @@ export class Game {
         this.updateBehindMoney();
     }
 
-    notif_attractionCompleted(args) {
-        this.moveCard(args.card, `bigtop-completed-${args.player_id}`);
-        this.updateCompletedCount(args.player_id);
+    async notif_attractionCompleted(args) {
+        await this.animateCompletedCoins(args.player_id, args.card.id);
+        const movement = this.moveCard(args.card, `bigtop-completed-${args.player_id}`);
         this.updateBehindMoney();
+        await movement;
+        this.updateCompletedCount(args.player_id);
     }
 
     async notif_auctionWon(args) {
