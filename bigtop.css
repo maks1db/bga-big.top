@@ -894,6 +894,10 @@ html[data-theme="dark"] #bigtop-game {
     display: block;
 }
 
+.bigtop-card-tooltip[hidden] {
+    display: none !important;
+}
+
 .bigtop-card-tooltip.bigtop-card-tooltip-floating {
     bottom: auto;
     display: block;

@@ -189,10 +189,18 @@ export class Game {
         this.selectedAuctionCard = null;
         this.coinMode = null;
         this.placeable = {};
+        this.tooltipListeners = new AbortController();
+    }
+
+    destroy() {
+        this.tooltipListeners.abort();
+        this.hideAllCardTooltips();
     }
 
     /** @param {bigtopGamedatas} gamedatas */
     setup(gamedatas) {
+        this.tooltipListeners.abort();
+        this.tooltipListeners = new AbortController();
         this.gamedatas = gamedatas;
         this.cardTypes = gamedatas.cardTypes;
 
@@ -357,6 +365,13 @@ export class Game {
         });
         this.setupPlayerSlider();
         this.updateBehindMoney();
+        const tooltipListenerSignal = this.tooltipListeners.signal;
+        window.addEventListener('scroll', () => this.hideAllCardTooltips(), {
+            capture: true,
+            signal: tooltipListenerSignal,
+        });
+        window.addEventListener('resize', () => this.hideAllCardTooltips(), { signal: tooltipListenerSignal });
+        window.addEventListener('blur', () => this.hideAllCardTooltips(), { signal: tooltipListenerSignal });
         this.bga.notifications.setupPromiseNotifications();
     }
 
@@ -376,6 +391,7 @@ export class Game {
         if (nextIndex === currentIndex) {
             return;
         }
+        this.hideAllCardTooltips();
         this.visiblePlayerId = this.playerIds[nextIndex];
         this.updatePlayerSlider();
     }
@@ -797,14 +813,23 @@ export class Game {
             element.tabIndex = 0;
             const tooltip = document.createElement('div');
             tooltip.id = `bigtop-card-help-${card.id}`;
+            tooltip.dataset.cardId = card.id;
             tooltip.className = 'bigtop-card-tooltip';
             tooltip.setAttribute('role', 'tooltip');
             tooltip.textContent = help;
             element.appendChild(tooltip);
             element.setAttribute('aria-describedby', tooltip.id);
-            element.addEventListener('pointerenter', () => this.showCardTooltip(element));
-            element.addEventListener('pointerleave', () => this.hideCardTooltip(element));
-            element.addEventListener('focus', () => this.showCardTooltip(element));
+            element.addEventListener('pointerenter', event => {
+                if (event.pointerType !== 'touch') {
+                    this.showCardTooltip(element);
+                }
+            });
+            element.addEventListener('pointerleave', () => this.hideCardTooltip(element, true));
+            element.addEventListener('focus', () => {
+                if (element.matches(':focus-visible')) {
+                    this.showCardTooltip(element);
+                }
+            });
             element.addEventListener('blur', () => this.hideCardTooltip(element));
         }
         this.updateCardElement(element, card);
@@ -813,15 +838,17 @@ export class Game {
     }
 
     showCardTooltip(element) {
-        if (!element.closest('.bigtop-attractions-row')) {
+        if (!element.isConnected || !element.closest('.bigtop-attractions-row')) {
             return;
         }
+        this.hideAllCardTooltips();
         const tooltip = document.getElementById(`bigtop-card-help-${element.dataset.cardId}`);
         if (!tooltip) {
             return;
         }
 
         document.body.appendChild(tooltip);
+        tooltip.hidden = false;
         tooltip.classList.add('bigtop-card-tooltip-floating');
         tooltip.style.left = '0px';
         tooltip.style.top = '0px';
@@ -837,17 +864,33 @@ export class Game {
         tooltip.style.top = `${top}px`;
     }
 
-    hideCardTooltip(element) {
+    hideCardTooltip(element, pointerLeaving = false) {
         const tooltip = document.getElementById(`bigtop-card-help-${element.dataset.cardId}`);
         if (!tooltip?.classList.contains('bigtop-card-tooltip-floating')
-            || element.matches(':hover')
-            || element.contains(document.activeElement)) {
+            || element.matches(':focus-visible')
+            || (!pointerLeaving && element.matches(':hover'))) {
             return;
         }
+        this.restoreCardTooltip(element, tooltip);
+    }
+
+    restoreCardTooltip(element, tooltip) {
         tooltip.classList.remove('bigtop-card-tooltip-floating');
+        tooltip.hidden = true;
         tooltip.style.left = '';
         tooltip.style.top = '';
         element.appendChild(tooltip);
+    }
+
+    hideAllCardTooltips() {
+        document.querySelectorAll('.bigtop-card-tooltip-floating').forEach(tooltip => {
+            const element = document.querySelector(`.bigtop-card-frame[data-card-id="${tooltip.dataset.cardId}"]`);
+            if (element) {
+                this.restoreCardTooltip(element, tooltip);
+            } else {
+                tooltip.remove();
+            }
+        });
     }
 
     updateCardElement(element, card) {
@@ -922,6 +965,7 @@ export class Game {
     }
 
     moveCard(card, targetId) {
+        this.hideAllCardTooltips();
         let element = document.querySelector(`.bigtop-card-frame[data-card-id="${Number(card.id)}"]`);
         if (!element) {
             element = this.createCard(card);
@@ -1112,6 +1156,7 @@ export class Game {
     }
 
     notif_auctionDiscarded(args) {
+        this.hideAllCardTooltips();
         document.querySelector(`.bigtop-card-frame[data-card-id="${Number(args.card.id)}"]`)?.remove();
         this.updateAuctionVisibility();
     }
