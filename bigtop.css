@@ -316,6 +316,11 @@ body,
     text-shadow: 0 2px 3px #000;
 }
 
+.bigtop-player-table > h3 {
+    -webkit-text-stroke: 1px #ffe9b5;
+    paint-order: stroke fill;
+}
+
 .bigtop-common-section h3 {
     background: #240c0dbf;
     border: 1px solid #c69953;
