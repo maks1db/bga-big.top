@@ -32,7 +32,7 @@ class Game extends \Bga\GameFramework\Table
         12 => ['name' => 'Plate Spinner', 'points' => 11, 'stars' => 0, 'bids' => [3, 5, 9], 'effect' => null, 'clown' => null],
         13 => ['name' => 'Juggler', 'points' => 6, 'stars' => 0, 'bids' => [4, 5, 6], 'effect' => null, 'clown' => null],
         14 => ['name' => 'Equestrian', 'points' => 7, 'stars' => 0, 'bids' => [10, 12], 'effect' => null, 'clown' => null],
-        15 => ['name' => 'Tower of Chairs', 'points' => 3, 'stars' => 2, 'bids' => [6, 7, 8], 'effect' => null, 'clown' => null],
+        15 => ['name' => 'Tower of Chairs', 'points' => 3, 'stars' => 3, 'bids' => [6, 7, 8], 'effect' => null, 'clown' => null],
         16 => ['name' => 'Fortune Teller', 'points' => 3, 'stars' => 1, 'bids' => [4, 7], 'effect' => null, 'clown' => null],
         17 => ['name' => 'Animal Trainer', 'points' => 4, 'stars' => 0, 'bids' => [5, 6, 7], 'effect' => null, 'clown' => null],
         18 => ['name' => 'Contortionist', 'points' => 2, 'stars' => 0, 'bids' => [2, 4], 'effect' => 'ownCoin', 'clown' => null],
