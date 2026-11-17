@@ -757,15 +757,15 @@ html[data-theme="dark"] #bigtop-game {
 }
 
 .bigtop-player-auctioneer.bigtop-auctioneer-token {
-    background-image: url('img/elements-18.png');
+    background-image: url('img/elements-50.png');
     background-position: 0 100%;
     background-repeat: no-repeat;
     background-size: 300% 200%;
     display: inline-block;
-    height: 18px;
-    margin-right: 6px;
+    height: 28px;
+    margin-left: 6px;
     vertical-align: middle;
-    width: 18px;
+    width: 28px;
 }
 
 .bigtop-player-auctioneer[hidden] {

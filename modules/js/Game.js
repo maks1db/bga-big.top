@@ -284,9 +284,6 @@ export class Game {
         ];
         Object.values(gamedatas.players).forEach(player => {
             const playerId = Number(player.id);
-            this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `
-                <span id="bigtop-player-auctioneer-${playerId}" class="bigtop-player-auctioneer bigtop-auctioneer-token" data-player-id="${playerId}" role="img" aria-label="${_('Auctioneer')}" title="${_('Auctioneer')}" hidden></span>
-            `);
             if (player.money !== undefined) {
                 this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `
                     <span class="bigtop-player-bank">${_('Bank')}: <span id="bigtop-money-counter-${playerId}"></span> <span class="bigtop-money-icon" role="img" aria-label="${_('Coins')}"></span></span>
@@ -299,6 +296,9 @@ export class Game {
                 });
                 this.moneyCounters[playerId] = counter;
             }
+            this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `
+                <span id="bigtop-player-auctioneer-${playerId}" class="bigtop-player-auctioneer bigtop-auctioneer-token" data-player-id="${playerId}" role="img" aria-label="${_('Auctioneer')}" title="${_('Auctioneer')}" hidden></span>
+            `);
 
             const table = document.createElement('section');
             table.id = `bigtop-player-table-${playerId}`;
