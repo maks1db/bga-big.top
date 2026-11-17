@@ -97,35 +97,17 @@ class PlaceCoins {
     }
 
     onEnteringState(args, isCurrentPlayerActive) {
-        this.bga.statusBar.setTitle(isCurrentPlayerActive
-            ? _('${you} may place or take back coins, then continue')
-            : _('${actplayer} may place or take back coins')
-        );
-        this.game.setCoinMode(isCurrentPlayerActive ? 'place' : null, args.placeable);
-        if (isCurrentPlayerActive && args.canPlace) {
-            this.bga.statusBar.addActionButton(
-                _('Continue auction'),
-                async () => {
-                    const choicePromise = this.bga.dialogs.multipleChoice(
-                        _('You can still place coins on your cards. Continue auction?'),
-                        {
-                            continue: _('Continue'),
-                            cancel: _('Cancel'),
-                        },
-                    );
-                    document.querySelector('.multiplechoice_btn[data-key="cancel"]')
-                        ?.classList.replace('bgabutton_blue', 'bgabutton_gray');
-                    const choice = await choicePromise;
-                    if (choice !== 'continue') {
-                        return;
-                    }
-                    this.bga.actions.performAction('actFinishPlacement');
-                },
-            );
-        }
+        this.game.placeCoinsArgs = args;
+        this.game.placeCoinsActive = isCurrentPlayerActive;
+        this.game.clearCoinRemovalSelection(false);
+        this.game.setCoinMode(isCurrentPlayerActive ? 'place' : null, args.placeable, args.removable);
+        this.game.showPlaceCoinsStatus();
     }
 
     onLeavingState() {
+        this.game.placeCoinsArgs = null;
+        this.game.placeCoinsActive = false;
+        this.game.clearCoinRemovalSelection(false);
         this.game.setCoinMode(null, {});
     }
 }
@@ -189,18 +171,23 @@ export class Game {
         this.selectedAuctionCard = null;
         this.coinMode = null;
         this.placeable = {};
-        this.tooltipListeners = new AbortController();
+        this.removable = {};
+        this.selectedCoinRemoval = null;
+        this.placeCoinsArgs = null;
+        this.placeCoinsActive = false;
+        this.uiListeners = new AbortController();
     }
 
     destroy() {
-        this.tooltipListeners.abort();
+        this.uiListeners.abort();
+        this.clearCoinRemovalSelection(false);
         this.hideAllCardTooltips();
     }
 
     /** @param {bigtopGamedatas} gamedatas */
     setup(gamedatas) {
-        this.tooltipListeners.abort();
-        this.tooltipListeners = new AbortController();
+        this.uiListeners.abort();
+        this.uiListeners = new AbortController();
         this.gamedatas = gamedatas;
         this.cardTypes = gamedatas.cardTypes;
 
@@ -369,13 +356,14 @@ export class Game {
         });
         this.setupPlayerSlider();
         this.updateBehindMoney();
-        const tooltipListenerSignal = this.tooltipListeners.signal;
+        const uiListenerSignal = this.uiListeners.signal;
         window.addEventListener('scroll', () => this.hideAllCardTooltips(), {
             capture: true,
-            signal: tooltipListenerSignal,
+            signal: uiListenerSignal,
         });
-        window.addEventListener('resize', () => this.hideAllCardTooltips(), { signal: tooltipListenerSignal });
-        window.addEventListener('blur', () => this.hideAllCardTooltips(), { signal: tooltipListenerSignal });
+        window.addEventListener('resize', () => this.hideAllCardTooltips(), { signal: uiListenerSignal });
+        window.addEventListener('blur', () => this.hideAllCardTooltips(), { signal: uiListenerSignal });
+        document.addEventListener('click', event => this.onDocumentClick(event), { signal: uiListenerSignal });
         this.bga.notifications.setupPromiseNotifications();
     }
 
@@ -673,6 +661,80 @@ export class Game {
         this.bga.statusBar.removeActionButtons();
     }
 
+    showPlaceCoinsStatus() {
+        const args = this.placeCoinsArgs;
+        if (!args) {
+            return;
+        }
+        this.bga.statusBar.removeActionButtons();
+        this.bga.statusBar.setTitle(this.placeCoinsActive
+            ? _('${you} may place or take back coins, then continue')
+            : _('${actplayer} may place or take back coins')
+        );
+        if (!this.placeCoinsActive || !args.hasActions) {
+            return;
+        }
+        this.bga.statusBar.addActionButton(
+            _('Continue auction'),
+            async () => {
+                if (args.canPlace) {
+                    const choicePromise = this.bga.dialogs.multipleChoice(
+                        _('You can still place coins on your cards. Continue auction?'),
+                        {
+                            continue: _('Continue'),
+                            cancel: _('Cancel'),
+                        },
+                    );
+                    document.querySelector('.multiplechoice_btn[data-key="cancel"]')
+                        ?.classList.replace('bgabutton_blue', 'bgabutton_gray');
+                    const choice = await choicePromise;
+                    if (choice !== 'continue') {
+                        return;
+                    }
+                }
+                this.bga.actions.performAction('actFinishPlacement');
+            },
+        );
+    }
+
+    selectCoinRemoval(slot) {
+        if (this.selectedCoinRemoval === slot) {
+            this.clearCoinRemovalSelection();
+            return;
+        }
+        this.clearCoinRemovalSelection(false);
+        this.selectedCoinRemoval = slot;
+        slot.classList.add('bigtop-coin-removal-selected');
+        this.bga.statusBar.removeActionButtons();
+        this.bga.statusBar.setTitle(_('Do you want to take this coin back behind your screen?'));
+        this.bga.statusBar.addActionButton(_('Take coin back'), () => {
+            const cardId = Number(slot.dataset.cardId ?? slot.closest('[data-card-id]').dataset.cardId);
+            const circleIndex = Number(slot.dataset.circleIndex);
+            this.clearCoinRemovalSelection();
+            this.bga.actions.performAction('actRemoveCoin', { cardId, circleIndex });
+        });
+        this.bga.statusBar.addActionButton(_('Cancel'), () => {
+            this.clearCoinRemovalSelection();
+        }, { color: 'secondary' });
+    }
+
+    clearCoinRemovalSelection(restoreStatus = true) {
+        document.querySelectorAll('.bigtop-coin-removal-selected').forEach(slot => {
+            slot.classList.remove('bigtop-coin-removal-selected');
+        });
+        this.selectedCoinRemoval = null;
+        if (restoreStatus) {
+            this.showPlaceCoinsStatus();
+        }
+    }
+
+    onDocumentClick(event) {
+        if (this.selectedCoinRemoval
+            && !event.target.closest('.bigtop-coin-slot.bigtop-actionable')) {
+            this.clearCoinRemovalSelection();
+        }
+    }
+
     onCoinSlotClick(event) {
         const slot = event.target.closest('.bigtop-coin-slot.bigtop-actionable');
         if (!slot || !this.coinMode) {
@@ -684,16 +746,20 @@ export class Game {
         const circleIndex = Number(slot.dataset.circleIndex);
         if (this.coinMode === 'effect') {
             this.bga.actions.performAction('actEffectPlaceCoin', { cardId, circleIndex });
+        } else if (this.coinMode === 'place' && slot.classList.contains('bigtop-covered')) {
+            this.selectCoinRemoval(slot);
         } else if (this.coinMode === 'payment' || slot.classList.contains('bigtop-covered')) {
             this.bga.actions.performAction('actRemoveCoin', { cardId, circleIndex });
         } else {
+            this.clearCoinRemovalSelection();
             this.bga.actions.performAction('actPlaceCoin', { cardId, circleIndex });
         }
     }
 
-    setCoinMode(mode, placeable) {
+    setCoinMode(mode, placeable, removable = {}) {
         this.coinMode = mode;
         this.placeable = placeable || {};
+        this.removable = removable || {};
         document.querySelectorAll('.bigtop-card-coin-action').forEach(card => {
             card.classList.remove('bigtop-card-coin-action');
         });
@@ -709,6 +775,17 @@ export class Game {
         const root = document.getElementById(`bigtop-attractions-${playerId}`);
         if (mode === 'place' || mode === 'effect') {
             Object.entries(this.placeable).forEach(([cardId, circleIndexes]) => {
+                circleIndexes.forEach(circleIndex => {
+                    const slot = root.querySelector(`[data-card-id="${cardId}"] [data-circle-index="${circleIndex}"]`);
+                    if (slot) {
+                        slot.classList.add('bigtop-actionable');
+                        slot.tabIndex = 0;
+                    }
+                });
+            });
+        }
+        if (mode === 'place') {
+            Object.entries(this.removable).forEach(([cardId, circleIndexes]) => {
                 circleIndexes.forEach(circleIndex => {
                     const slot = root.querySelector(`[data-card-id="${cardId}"] [data-circle-index="${circleIndex}"]`);
                     if (slot) {

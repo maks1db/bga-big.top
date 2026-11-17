@@ -19,7 +19,7 @@ class PlaceCoins extends GameState
 
     public function onEnteringState(int $activePlayerId): ?string
     {
-        return $this->getArgs($activePlayerId)['canPlace'] ? null : NextBid::class;
+        return $this->getArgs($activePlayerId)['hasActions'] ? null : NextBid::class;
     }
 
     public function getArgs(int $activePlayerId): array
@@ -32,7 +32,8 @@ class PlaceCoins extends GameState
         $cards = $this->game->cards->getItemsInLocation(['attraction', $activePlayerId]);
         foreach ($cards as $card) {
             $covered = array_map('intval', $card->covered);
-            if ($covered !== []) {
+            $matchesBid = in_array($currentBid, Game::CARD_TYPES[$card->type]['bids'], true);
+            if ($covered !== [] && !$matchesBid) {
                 $removable[$card->id] = $covered;
             }
             if (in_array($card->id, $placedCardIds, true)) {
@@ -50,10 +51,13 @@ class PlaceCoins extends GameState
             }
         }
 
+        $canPlace = $placeable !== [] && $this->game->getBehindMoney($activePlayerId) >= 1;
         return [
             'placeable' => $placeable,
             'removable' => $removable,
-            'canPlace' => $placeable !== [] && $this->game->getBehindMoney($activePlayerId) >= 1,
+            'canPlace' => $canPlace,
+            'canRemove' => $removable !== [],
+            'hasActions' => $canPlace || $removable !== [],
         ];
     }
 
@@ -86,7 +90,17 @@ class PlaceCoins extends GameState
             return ResolveEffects::class;
         }
 
-        return $this->getArgs($activePlayerId)['canPlace'] ? PlaceCoins::class : NextBid::class;
+        return $this->getArgs($activePlayerId)['hasActions'] ? PlaceCoins::class : NextBid::class;
+    }
+
+    #[PossibleAction]
+    public function actRemoveCoin(int $cardId, int $circleIndex, int $activePlayerId, array $args): string
+    {
+        if (!in_array($circleIndex, $args['removable'][$cardId] ?? [], true)) {
+            throw new UserException(clienttranslate('You cannot take a coin from that card with this bid'));
+        }
+        $this->game->moveCoinToBehind($cardId, $circleIndex, $activePlayerId);
+        return $this->getArgs($activePlayerId)['hasActions'] ? PlaceCoins::class : NextBid::class;
     }
 
     #[PossibleAction]

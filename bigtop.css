@@ -1000,6 +1000,13 @@ html[data-theme="dark"] #bigtop-game {
     filter: brightness(1.15);
 }
 
+.bigtop-coin-slot.bigtop-coin-removal-selected {
+    border: 3px solid #e76f51;
+    box-shadow: 0 0 16px #e76f51cc;
+    box-sizing: border-box;
+    outline-color: #ffd1c7;
+}
+
 .bigtop-complete .bigtop-coin-slots,
 #bigtop-hand .bigtop-coin-slots,
 #bigtop-deck .bigtop-coin-slots {
