@@ -119,21 +119,17 @@ class Payment {
     }
 
     onEnteringState(args, isCurrentPlayerActive) {
-        this.bga.statusBar.setTitle(isCurrentPlayerActive
-            ? _('${you} must pay the winning bid')
-            : _('${actplayer} must pay the winning bid')
-        );
+        this.game.paymentArgs = args;
+        this.game.paymentActive = isCurrentPlayerActive;
+        this.game.clearCoinRemovalSelection(false);
         this.game.setCoinMode(isCurrentPlayerActive ? 'payment' : null, {});
-        if (isCurrentPlayerActive) {
-            const label = _('Pay ${bid}').replace('${bid}', args.bid);
-            this.bga.statusBar.addActionButton(
-                label,
-                () => this.bga.actions.performAction('actPay'),
-            );
-        }
+        this.game.showPaymentStatus();
     }
 
     onLeavingState() {
+        this.game.paymentArgs = null;
+        this.game.paymentActive = false;
+        this.game.clearCoinRemovalSelection(false);
         this.game.setCoinMode(null, {});
     }
 }
@@ -175,6 +171,8 @@ export class Game {
         this.selectedCoinRemoval = null;
         this.placeCoinsArgs = null;
         this.placeCoinsActive = false;
+        this.paymentArgs = null;
+        this.paymentActive = false;
         this.uiListeners = new AbortController();
     }
 
@@ -697,6 +695,25 @@ export class Game {
         );
     }
 
+    showPaymentStatus() {
+        const args = this.paymentArgs;
+        if (!args) {
+            return;
+        }
+        this.bga.statusBar.removeActionButtons();
+        this.bga.statusBar.setTitle(this.paymentActive
+            ? _('${you} must pay the winning bid')
+            : _('${actplayer} must pay the winning bid')
+        );
+        if (this.paymentActive) {
+            const label = _('Pay ${bid}').replace('${bid}', args.bid);
+            this.bga.statusBar.addActionButton(
+                label,
+                () => this.bga.actions.performAction('actPay'),
+            );
+        }
+    }
+
     selectCoinRemoval(slot) {
         if (this.selectedCoinRemoval === slot) {
             this.clearCoinRemovalSelection();
@@ -723,7 +740,9 @@ export class Game {
             slot.classList.remove('bigtop-coin-removal-selected');
         });
         this.selectedCoinRemoval = null;
-        if (restoreStatus) {
+        if (restoreStatus && this.coinMode === 'payment') {
+            this.showPaymentStatus();
+        } else if (restoreStatus) {
             this.showPlaceCoinsStatus();
         }
     }
@@ -746,10 +765,8 @@ export class Game {
         const circleIndex = Number(slot.dataset.circleIndex);
         if (this.coinMode === 'effect') {
             this.bga.actions.performAction('actEffectPlaceCoin', { cardId, circleIndex });
-        } else if (this.coinMode === 'place' && slot.classList.contains('bigtop-covered')) {
+        } else if (slot.classList.contains('bigtop-covered')) {
             this.selectCoinRemoval(slot);
-        } else if (this.coinMode === 'payment' || slot.classList.contains('bigtop-covered')) {
-            this.bga.actions.performAction('actRemoveCoin', { cardId, circleIndex });
         } else {
             this.clearCoinRemovalSelection();
             this.bga.actions.performAction('actPlaceCoin', { cardId, circleIndex });
