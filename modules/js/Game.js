@@ -233,10 +233,10 @@ export class Game {
                             <output id="bigtop-bid-value" aria-label="${_('Your bid')}" aria-live="polite"></output>
                             <button id="bigtop-bid-increase" class="bigtop-bid-step" type="button" aria-label="${_('Increase bid')}">+</button>
                         </div>
-                        <div id="bigtop-auction-passes" class="bigtop-auction-passes" hidden>
-                            <h3>${_('Out of auction')}</h3>
-                            <ul id="bigtop-auction-passed-players"></ul>
-                        </div>
+                    </div>
+                    <div id="bigtop-auction-passes" class="bigtop-auction-passes" hidden>
+                        <h3>${_('Out of auction')}</h3>
+                        <ul id="bigtop-auction-passed-players"></ul>
                     </div>
                     <div id="bigtop-bank-area" class="bigtop-common-section">
                         <h3>${_('Bank')}</h3>
@@ -351,7 +351,7 @@ export class Game {
             document.getElementById('bigtop-hand').appendChild(this.createCard(card));
         });
         this.updateAuctionVisibility();
-        this.updateAuctionPasses(gamedatas.passedPlayers, false);
+        this.updateAuctionPasses(gamedatas.auction.length > 0 ? gamedatas.passedPlayers : [], false);
 
         document.getElementById('bigtop-hand').addEventListener('click', event => this.onHandClick(event));
         document.getElementById('bigtop-player-tables').addEventListener('click', event => this.onCoinSlotClick(event));

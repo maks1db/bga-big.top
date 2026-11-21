@@ -59,15 +59,14 @@ body,
 
 .bigtop-auction-passes {
     background: linear-gradient(145deg, #3c1519ed, #1c0b10ed);
-    border: 1px solid #c69a4d;
     border-radius: 10px;
     box-shadow: 0 4px 12px #0007, inset 0 0 16px #d8a74d12;
-    left: calc(100% + 24px);
     max-width: 220px;
     min-width: 150px;
     padding: 10px 14px;
     position: absolute;
-    top: 40px;
+    right: 3%;
+    top: 220px;
     width: max-content;
     z-index: 2;
 }
@@ -720,7 +719,8 @@ html[data-theme="dark"] #bigtop-game {
     #bigtop-auction-passes {
         left: 50%;
         max-width: 260px;
-        top: calc(100% + 12px);
+        right: auto;
+        top: 420px;
         transform: translateX(-50%);
     }
 }
