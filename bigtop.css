@@ -58,7 +58,7 @@ body,
 }
 
 .bigtop-auction-passes {
-    background: linear-gradient(145deg, #3c1519ed, #1c0b10ed);
+    background: #1c0b0dd9;
     border-radius: 10px;
     box-shadow: 0 4px 12px #0007, inset 0 0 16px #d8a74d12;
     max-width: 220px;
@@ -66,7 +66,7 @@ body,
     padding: 10px 14px;
     position: absolute;
     right: 3%;
-    top: 220px;
+    top: 130px;
     width: max-content;
     z-index: 2;
 }
@@ -714,14 +714,6 @@ html[data-theme="dark"] #bigtop-game {
 
     #bigtop-common {
         gap: 10px;
-    }
-
-    #bigtop-auction-passes {
-        left: 50%;
-        max-width: 260px;
-        right: auto;
-        top: 420px;
-        transform: translateX(-50%);
     }
 }
 
