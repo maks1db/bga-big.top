@@ -70,11 +70,13 @@ class Auction extends GameState
     {
         $passedPlayers = $this->globals->get('passed_players', []);
         $passedPlayers[] = $activePlayerId;
-        $this->globals->set('passed_players', array_values(array_unique($passedPlayers)));
+        $passedPlayers = array_values(array_unique($passedPlayers));
+        $this->globals->set('passed_players', $passedPlayers);
 
         $this->notify->all('auctionPass', clienttranslate('${player_name} passes'), [
             'player_id' => $activePlayerId,
             'player_name' => $this->game->getPlayerNameById($activePlayerId),
+            'passedPlayers' => $passedPlayers,
         ]);
 
         return NextBid::class;

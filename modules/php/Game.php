@@ -103,6 +103,7 @@ class Game extends \Bga\GameFramework\Table
 
         $result['cardTypes'] = self::CARD_TYPES;
         $result['auctioneer'] = (int)$this->globals->get('auctioneer_id');
+        $result['passedPlayers'] = array_map('intval', $this->globals->get('passed_players', []));
         $result['deckCount'] = $this->cards->countItemsInLocation('deck');
         $result['hand'] = $this->cards->getItemsInLocation(['hand', $currentPlayerId])->values();
         $result['attractions'] = $this->cards->getItemsInLocation('attraction')->values();

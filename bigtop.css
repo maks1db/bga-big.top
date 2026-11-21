@@ -52,8 +52,47 @@ body,
     z-index: 1;
 }
 
-#bigtop-auction-area[hidden] {
+#bigtop-auction-area[hidden],
+#bigtop-auction-passes[hidden] {
     display: none;
+}
+
+.bigtop-auction-passes {
+    background: linear-gradient(145deg, #3c1519ed, #1c0b10ed);
+    border: 1px solid #c69a4d;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px #0007, inset 0 0 16px #d8a74d12;
+    left: calc(100% + 24px);
+    max-width: 220px;
+    min-width: 150px;
+    padding: 10px 14px;
+    position: absolute;
+    top: 40px;
+    width: max-content;
+    z-index: 2;
+}
+
+.bigtop-auction-passes h3 {
+    color: #f8e7bd;
+    font-size: 16px;
+    margin: 0 0 8px;
+    white-space: nowrap;
+}
+
+.bigtop-auction-passes ul {
+    display: grid;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.bigtop-auction-passes li {
+    -webkit-text-stroke: 1px #ffe9b5;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+    paint-order: stroke fill;
+    text-shadow: 0 1px 2px #000;
 }
 
 .bigtop-auction-owner {
@@ -676,6 +715,13 @@ html[data-theme="dark"] #bigtop-game {
 
     #bigtop-common {
         gap: 10px;
+    }
+
+    #bigtop-auction-passes {
+        left: 50%;
+        max-width: 260px;
+        top: calc(100% + 12px);
+        transform: translateX(-50%);
     }
 }
 

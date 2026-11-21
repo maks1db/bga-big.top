@@ -15,6 +15,7 @@
  * @typedef {Gamedatas<bigtopPlayer> & {
  *   bank: number,
  *   auctioneer: number,
+ *   passedPlayers: number[],
  *   cardTypes: Object,
  *   deckCount: number,
  *   hand: bigtopCard[],
@@ -229,6 +230,10 @@ export class Game {
                             <output id="bigtop-bid-value" aria-label="${_('Your bid')}" aria-live="polite"></output>
                             <button id="bigtop-bid-increase" class="bigtop-bid-step" type="button" aria-label="${_('Increase bid')}">+</button>
                         </div>
+                        <div id="bigtop-auction-passes" class="bigtop-auction-passes" hidden>
+                            <h3>${_('Out of auction')}</h3>
+                            <ul id="bigtop-auction-passed-players"></ul>
+                        </div>
                     </div>
                     <div id="bigtop-bank-area" class="bigtop-common-section">
                         <h3>${_('Bank')}</h3>
@@ -343,6 +348,7 @@ export class Game {
             document.getElementById('bigtop-hand').appendChild(this.createCard(card));
         });
         this.updateAuctionVisibility();
+        this.updateAuctionPasses(gamedatas.passedPlayers);
 
         document.getElementById('bigtop-hand').addEventListener('click', event => this.onHandClick(event));
         document.getElementById('bigtop-player-tables').addEventListener('click', event => this.onCoinSlotClick(event));
@@ -1245,7 +1251,32 @@ export class Game {
 
     updateAuctionVisibility() {
         const auction = document.getElementById('bigtop-auction');
-        document.getElementById('bigtop-auction-area').hidden = auction.children.length === 0;
+        const hasAuction = auction.children.length > 0;
+        document.getElementById('bigtop-auction-area').hidden = !hasAuction;
+        if (!hasAuction) {
+            this.updateAuctionPasses([]);
+        }
+    }
+
+    updateAuctionPasses(playerIds) {
+        const area = document.getElementById('bigtop-auction-passes');
+        const list = document.getElementById('bigtop-auction-passed-players');
+        const items = [];
+        playerIds.forEach(playerId => {
+            const player = this.gamedatas.players[playerId];
+            if (!player) {
+                return;
+            }
+            const item = document.createElement('li');
+            item.textContent = player.name;
+            item.dataset.playerId = player.id;
+            if (player.color) {
+                item.style.color = `#${player.color.replace(/^#/, '')}`;
+            }
+            items.push(item);
+        });
+        list.replaceChildren(...items);
+        area.hidden = items.length === 0;
     }
 
     updateBid(currentBid, highBidder) {
@@ -1298,6 +1329,7 @@ export class Game {
     }
 
     notif_auctionCard(args) {
+        this.updateAuctionPasses([]);
         document.getElementById('bigtop-auction-area').hidden = false;
         const movement = this.moveCard(args.card, 'bigtop-auction');
         this.updateBid(0, null);
@@ -1306,6 +1338,10 @@ export class Game {
 
     notif_bidMade(args) {
         this.updateBid(args.bid, args.player_id);
+    }
+
+    notif_auctionPass(args) {
+        this.updateAuctionPasses(args.passedPlayers);
     }
 
     notif_coinPlaced(args) {
