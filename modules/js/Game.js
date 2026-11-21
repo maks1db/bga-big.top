@@ -166,6 +166,7 @@ export class Game {
         this.handSelectionActive = false;
         this.auctionConfirmationPending = false;
         this.selectedAuctionCard = null;
+        this.auctionPassesAnimation = null;
         this.coinMode = null;
         this.placeable = {};
         this.removable = {};
@@ -179,6 +180,8 @@ export class Game {
 
     destroy() {
         this.uiListeners.abort();
+        this.auctionPassesAnimation?.cancel();
+        this.auctionPassesAnimation = null;
         this.clearCoinRemovalSelection(false);
         this.hideAllCardTooltips();
     }
@@ -348,7 +351,7 @@ export class Game {
             document.getElementById('bigtop-hand').appendChild(this.createCard(card));
         });
         this.updateAuctionVisibility();
-        this.updateAuctionPasses(gamedatas.passedPlayers);
+        this.updateAuctionPasses(gamedatas.passedPlayers, false);
 
         document.getElementById('bigtop-hand').addEventListener('click', event => this.onHandClick(event));
         document.getElementById('bigtop-player-tables').addEventListener('click', event => this.onCoinSlotClick(event));
@@ -1254,11 +1257,11 @@ export class Game {
         const hasAuction = auction.children.length > 0;
         document.getElementById('bigtop-auction-area').hidden = !hasAuction;
         if (!hasAuction) {
-            this.updateAuctionPasses([]);
+            this.updateAuctionPasses([], false);
         }
     }
 
-    updateAuctionPasses(playerIds) {
+    updateAuctionPasses(playerIds, animate = true) {
         const area = document.getElementById('bigtop-auction-passes');
         const list = document.getElementById('bigtop-auction-passed-players');
         const items = [];
@@ -1276,7 +1279,54 @@ export class Game {
             items.push(item);
         });
         list.replaceChildren(...items);
-        area.hidden = items.length === 0;
+
+        this.auctionPassesAnimation?.cancel();
+        this.auctionPassesAnimation = null;
+        const wasHidden = area.hidden;
+        const shouldShow = items.length > 0;
+        const shouldAnimate = animate
+            && this.bga.gameui.bgaAnimationsActive()
+            && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!shouldAnimate) {
+            area.hidden = !shouldShow;
+            return Promise.resolve();
+        }
+
+        if (!shouldShow) {
+            if (wasHidden) {
+                return Promise.resolve();
+            }
+            const animation = area.animate([
+                { opacity: 1, translate: '0 0' },
+                { opacity: 0, translate: '12px 0' },
+            ], { duration: 200, easing: 'ease-in', fill: 'forwards' });
+            this.auctionPassesAnimation = animation;
+            return animation.finished.catch(() => {}).then(() => {
+                if (this.auctionPassesAnimation !== animation) {
+                    return;
+                }
+                area.hidden = true;
+                animation.cancel();
+                this.auctionPassesAnimation = null;
+            });
+        }
+
+        area.hidden = false;
+        if (!wasHidden) {
+            return Promise.resolve();
+        }
+        const animation = area.animate([
+            { opacity: 0, translate: '12px 0' },
+            { opacity: 1, translate: '0 0' },
+        ], { duration: 260, easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)', fill: 'forwards' });
+        this.auctionPassesAnimation = animation;
+        return animation.finished.catch(() => {}).then(() => {
+            if (this.auctionPassesAnimation !== animation) {
+                return;
+            }
+            animation.cancel();
+            this.auctionPassesAnimation = null;
+        });
     }
 
     updateBid(currentBid, highBidder) {
@@ -1329,7 +1379,7 @@ export class Game {
     }
 
     notif_auctionCard(args) {
-        this.updateAuctionPasses([]);
+        this.updateAuctionPasses([], false);
         document.getElementById('bigtop-auction-area').hidden = false;
         const movement = this.moveCard(args.card, 'bigtop-auction');
         this.updateBid(0, null);
@@ -1363,15 +1413,17 @@ export class Game {
     }
 
     async notif_auctionWon(args) {
-        await this.animateAuctionPayment(args.player_id, args.bid);
+        const passesAnimation = this.updateAuctionPasses([]);
+        await Promise.all([this.animateAuctionPayment(args.player_id, args.bid), passesAnimation]);
         const movement = this.moveCard(args.card, `bigtop-attractions-${args.player_id}`);
         this.updateAuctionVisibility();
         this.updateBehindMoney();
         return movement;
     }
 
-    notif_auctionDiscarded(args) {
+    async notif_auctionDiscarded(args) {
         this.hideAllCardTooltips();
+        await this.updateAuctionPasses([]);
         document.querySelector(`.bigtop-card-frame[data-card-id="${Number(args.card.id)}"]`)?.remove();
         this.updateAuctionVisibility();
     }
