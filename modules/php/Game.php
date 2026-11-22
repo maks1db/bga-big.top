@@ -406,19 +406,23 @@ class Game extends \Bga\GameFramework\Table
         $starCells = [];
         foreach ($playerIds as $playerId) {
             $score = $scores[$playerId];
-            $coinDetails = [sprintf(
-                clienttranslate('%1$d coins ÷ %2$d = %3$d'),
-                $score['coin_count'],
-                $score['coin_divisor'],
-                $score['coins'],
-            )];
-            if ($score['coin_count'] % $score['coin_divisor'] !== 0) {
-                $coinDetails[] = clienttranslate('Remainder ignored');
+            if ($intermediate) {
+                $coinCells[] = '<div class="bigtop-final-score-cell"><strong>?</strong></div>';
+            } else {
+                $coinDetails = [sprintf(
+                    clienttranslate('%1$d coins ÷ %2$d = %3$d'),
+                    $score['coin_count'],
+                    $score['coin_divisor'],
+                    $score['coins'],
+                )];
+                if ($score['coin_count'] % $score['coin_divisor'] !== 0) {
+                    $coinDetails[] = clienttranslate('Remainder ignored');
+                }
+                if ($score['coin_divisor'] === 2) {
+                    $coinDetails[] = clienttranslate('Clown bonus applied');
+                }
+                $coinCells[] = $this->formatScoreCell($score['coins'], $coinDetails);
             }
-            if ($score['coin_divisor'] === 2) {
-                $coinDetails[] = clienttranslate('Clown bonus applied');
-            }
-            $coinCells[] = $this->formatScoreCell($score['coins'], $coinDetails);
             $starCells[] = $this->formatScoreCell($score['stars'], [$this->formatStarDetails(
                 $starCounts[$playerId],
                 $score['star_first_place'],
