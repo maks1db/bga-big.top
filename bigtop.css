@@ -835,19 +835,8 @@ html[data-theme="dark"] #bigtop-game {
     display: none;
 }
 
-.bigtop-player-score {
-    margin-left: 8px;
-    white-space: nowrap;
-}
-
 .bigtop-player-score-value {
-    background: transparent;
-    border: 0;
-    color: inherit;
     cursor: help;
-    font: inherit;
-    font-weight: bold;
-    padding: 0 2px;
     text-decoration: underline dotted;
     text-underline-offset: 3px;
 }

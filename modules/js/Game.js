@@ -292,11 +292,22 @@ export class Game {
             }
             this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `
                 <span id="bigtop-player-auctioneer-${playerId}" class="bigtop-player-auctioneer bigtop-auctioneer-token" data-player-id="${playerId}" role="img" aria-label="${_('Auctioneer')}" title="${_('Auctioneer')}" hidden></span>
-                <span class="bigtop-player-score">${_('Score')}: <button id="bigtop-player-score-${playerId}" class="bigtop-player-score-value" type="button" title="${_('View current scoring')}" aria-label="${_('View current scoring')}">0</button></span>
             `);
-            document.getElementById(`bigtop-player-score-${playerId}`).addEventListener('click', () => {
-                this.showCurrentScoring();
-            });
+            const scoreValue = document.getElementById(`player_score_${playerId}`);
+            if (scoreValue) {
+                scoreValue.classList.add('bigtop-player-score-value');
+                scoreValue.tabIndex = 0;
+                scoreValue.setAttribute('role', 'button');
+                scoreValue.setAttribute('aria-label', _('View current scoring'));
+                scoreValue.title = _('View current scoring');
+                scoreValue.addEventListener('click', () => this.showCurrentScoring());
+                scoreValue.addEventListener('keydown', event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        this.showCurrentScoring();
+                    }
+                });
+            }
 
             const table = document.createElement('section');
             table.id = `bigtop-player-table-${playerId}`;
@@ -451,10 +462,7 @@ export class Game {
         }
         this.scoring = scoring;
         Object.entries(scoring.scores).forEach(([playerId, score]) => {
-            const value = document.getElementById(`bigtop-player-score-${playerId}`);
-            if (value) {
-                value.textContent = score.total;
-            }
+            this.bga.playerPanels.getScoreCounter(Number(playerId)).setValue(Number(score.total));
         });
     }
 
