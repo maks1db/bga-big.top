@@ -102,6 +102,9 @@ class PlaceCoins {
         this.game.placeCoinsArgs = args;
         this.game.placeCoinsActive = isCurrentPlayerActive;
         this.game.clearCoinRemovalSelection(false);
+        if (isCurrentPlayerActive) {
+            this.game.showPlayerTable(this.bga.players.getCurrentPlayerId());
+        }
         this.game.setCoinMode(isCurrentPlayerActive ? 'place' : null, args.placeable, args.removable);
         this.game.showPlaceCoinsStatus();
     }
@@ -124,6 +127,9 @@ class Payment {
         this.game.paymentArgs = args;
         this.game.paymentActive = isCurrentPlayerActive;
         this.game.clearCoinRemovalSelection(false);
+        if (isCurrentPlayerActive) {
+            this.game.showPlayerTable(this.bga.players.getCurrentPlayerId());
+        }
         this.game.setCoinMode(isCurrentPlayerActive ? 'payment' : null, {});
         this.game.showPaymentStatus();
     }
@@ -147,6 +153,9 @@ class EffectCoins {
             ? _('${you} must place coins for the immediate effect')
             : _('${actplayer} must place coins for an immediate effect')
         );
+        if (isCurrentPlayerActive) {
+            this.game.showPlayerTable(this.bga.players.getCurrentPlayerId());
+        }
         this.game.setCoinMode(isCurrentPlayerActive ? 'effect' : null, args.targets);
     }
 
@@ -398,6 +407,15 @@ export class Game {
         document.getElementById('bigtop-player-previous').addEventListener('click', () => this.slidePlayer(-1));
         document.getElementById('bigtop-player-next').addEventListener('click', () => this.slidePlayer(1));
         window.addEventListener('resize', () => this.updatePlayerSliderHeight());
+        this.updatePlayerSlider();
+    }
+
+    showPlayerTable(playerId) {
+        if (!this.playerIds.includes(playerId) || this.visiblePlayerId === playerId) {
+            return;
+        }
+        this.hideAllCardTooltips();
+        this.visiblePlayerId = playerId;
         this.updatePlayerSlider();
     }
 
