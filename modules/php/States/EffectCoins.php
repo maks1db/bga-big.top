@@ -54,6 +54,7 @@ class EffectCoins extends GameState
             'player_id' => $activePlayerId,
             'player_name' => $this->game->getPlayerNameById($activePlayerId),
             'card' => $card,
+            'scoring' => $this->game->getScoring(true),
         ]);
         $this->game->completeIfNeeded($card, $activePlayerId);
 

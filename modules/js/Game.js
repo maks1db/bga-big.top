@@ -21,7 +21,8 @@
  *   hand: bigtopCard[],
  *   attractions: bigtopCard[],
  *   completed: bigtopCard[],
- *   auction: bigtopCard[]
+ *   auction: bigtopCard[],
+ *   scoring: Object
  * }} bigtopGamedatas
  */
 
@@ -291,7 +292,11 @@ export class Game {
             }
             this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `
                 <span id="bigtop-player-auctioneer-${playerId}" class="bigtop-player-auctioneer bigtop-auctioneer-token" data-player-id="${playerId}" role="img" aria-label="${_('Auctioneer')}" title="${_('Auctioneer')}" hidden></span>
+                <span class="bigtop-player-score">${_('Score')}: <button id="bigtop-player-score-${playerId}" class="bigtop-player-score-value" type="button" title="${_('View current scoring')}" aria-label="${_('View current scoring')}">0</button></span>
             `);
+            document.getElementById(`bigtop-player-score-${playerId}`).addEventListener('click', () => {
+                this.showCurrentScoring();
+            });
 
             const table = document.createElement('section');
             table.id = `bigtop-player-table-${playerId}`;
@@ -330,6 +335,7 @@ export class Game {
             document.getElementById('bigtop-player-track').appendChild(table);
         });
         this.updateAuctioneer(gamedatas.auctioneer);
+        this.updateScoring(gamedatas.scoring);
 
         this.playerIds.forEach(playerId => {
             document.getElementById('bigtop-player-track').appendChild(
@@ -437,6 +443,58 @@ export class Game {
         const ownerName = document.getElementById('bigtop-auction-owner-name');
         ownerName.textContent = player?.name ?? '';
         ownerName.style.color = player?.color ? `#${player.color.replace(/^#/, '')}` : '';
+    }
+
+    updateScoring(scoring) {
+        if (!scoring) {
+            return;
+        }
+        this.scoring = scoring;
+        Object.entries(scoring.scores).forEach(([playerId, score]) => {
+            const value = document.getElementById(`bigtop-player-score-${playerId}`);
+            if (value) {
+                value.textContent = score.total;
+            }
+        });
+    }
+
+    showCurrentScoring() {
+        if (!this.scoring?.table) {
+            return;
+        }
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'bigtop-scoring-table-wrapper';
+        const table = document.createElement('table');
+        table.className = 'bigtop-scoring-table';
+        const body = document.createElement('tbody');
+        this.scoring.table.forEach((row, rowIndex) => {
+            const rowElement = document.createElement('tr');
+            row.forEach((cell, columnIndex) => {
+                const cellElement = document.createElement(rowIndex === 0 || columnIndex === 0 ? 'th' : 'td');
+                cellElement.scope = rowIndex === 0 ? 'col' : columnIndex === 0 ? 'row' : '';
+                if (typeof cell === 'string') {
+                    cellElement.innerHTML = cell;
+                } else {
+                    const playerId = Number(cell.args.player_id);
+                    const playerName = document.createElement('span');
+                    playerName.textContent = cell.args.player_name;
+                    const player = this.gamedatas.players[playerId];
+                    if (player?.color) {
+                        playerName.style.color = `#${player.color.replace(/^#/, '')}`;
+                    }
+                    cellElement.appendChild(playerName);
+                }
+                rowElement.appendChild(cellElement);
+            });
+            body.appendChild(rowElement);
+        });
+        table.appendChild(body);
+        wrapper.appendChild(table);
+        this.bga.dialogs.generic(_('Current scoring'), wrapper.outerHTML, {
+            id: 'bigtop-current-scoring',
+            maxWidth: 1100,
+        });
     }
 
     updateCompletedCount(playerId) {
@@ -1396,15 +1454,18 @@ export class Game {
 
     notif_coinPlaced(args) {
         this.updateCard(args.card);
+        this.updateScoring(args.scoring);
         this.updateBehindMoney();
     }
 
     notif_coinRemoved(args) {
         this.updateCard(args.card);
+        this.updateScoring(args.scoring);
         this.updateBehindMoney();
     }
 
     async notif_attractionCompleted(args) {
+        this.updateScoring(args.scoring);
         await this.animateCompletedCoins(args.player_id, args.card.id);
         const movement = this.moveCard(args.card, `bigtop-completed-${args.player_id}`);
         this.updateBehindMoney();
@@ -1413,6 +1474,7 @@ export class Game {
     }
 
     async notif_auctionWon(args) {
+        this.updateScoring(args.scoring);
         const passesAnimation = this.updateAuctionPasses([]);
         await Promise.all([this.animateAuctionPayment(args.player_id, args.bid), passesAnimation]);
         const movement = this.moveCard(args.card, `bigtop-attractions-${args.player_id}`);

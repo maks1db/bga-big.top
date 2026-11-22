@@ -76,6 +76,7 @@ class Payment extends GameState
             'card' => $card,
             'card_name' => Game::CARD_TYPES[$card->type]['name'],
             'bid' => $bid,
+            'scoring' => $this->game->getScoring(true),
             'i18n' => ['card_name'],
         ]);
         if ($this->game->completeIfNeeded($card, $activePlayerId)) {

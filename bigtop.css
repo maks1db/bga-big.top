@@ -835,6 +835,28 @@ html[data-theme="dark"] #bigtop-game {
     display: none;
 }
 
+.bigtop-player-score {
+    margin-left: 8px;
+    white-space: nowrap;
+}
+
+.bigtop-player-score-value {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: help;
+    font: inherit;
+    font-weight: bold;
+    padding: 0 2px;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+}
+
+.bigtop-player-score-value:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
 #bigtop-hand-area.bigtop-selectable .bigtop-card {
     cursor: pointer;
     outline: 3px solid #d39b24;
@@ -1127,4 +1149,31 @@ html[data-theme="dark"] #bigtop-game {
     font-size: 1.15em;
     padding: 6px 8px;
     text-align: center;
+}
+
+.bigtop-scoring-table-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.bigtop-scoring-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.bigtop-scoring-table th,
+.bigtop-scoring-table td {
+    border-bottom: 1px solid #a67b4055;
+    padding: 6px 8px;
+    vertical-align: top;
+}
+
+.bigtop-scoring-table thead th,
+.bigtop-scoring-table tbody tr:first-child th {
+    text-align: center;
+}
+
+.bigtop-scoring-table tbody th:first-child {
+    text-align: left;
+    white-space: nowrap;
 }
