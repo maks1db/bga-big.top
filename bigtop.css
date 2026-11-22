@@ -820,7 +820,8 @@ html[data-theme="dark"] #bigtop-game {
 }
 
 .bigtop-player-bank {
-    margin-left: 10px;
+    display: inline-block;
+    margin: 8px 0 0 10px;
 }
 
 .bigtop-player-auctioneer.bigtop-auctioneer-token {
