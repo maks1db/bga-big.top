@@ -303,7 +303,7 @@ export class Game {
                 <span id="bigtop-player-auctioneer-${playerId}" class="bigtop-player-auctioneer bigtop-auctioneer-token" data-player-id="${playerId}" role="img" aria-label="${_('Auctioneer')}" title="${_('Auctioneer')}" hidden></span>
             `);
             const scoreValue = document.getElementById(`player_score_${playerId}`);
-            if (scoreValue) {
+            if (scoreValue && playerId === this.bga.players.getCurrentPlayerId()) {
                 scoreValue.classList.add('bigtop-player-score-value');
                 scoreValue.tabIndex = 0;
                 scoreValue.setAttribute('role', 'button');
