@@ -819,6 +819,10 @@ html[data-theme="dark"] #bigtop-game {
     width: 52px;
 }
 
+.bigtop-player-bank {
+    margin-left: 10px;
+}
+
 .bigtop-player-auctioneer.bigtop-auctioneer-token {
     background-image: url('img/elements-50.png');
     background-position: 0 100%;
