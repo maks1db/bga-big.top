@@ -22,7 +22,8 @@
  *   attractions: bigtopCard[],
  *   completed: bigtopCard[],
  *   auction: bigtopCard[],
- *   scoring: Object
+ *   scoring: Object,
+ *   scoringFinished: boolean
  * }} bigtopGamedatas
  */
 
@@ -398,6 +399,9 @@ export class Game {
         window.addEventListener('blur', () => this.hideAllCardTooltips(), { signal: uiListenerSignal });
         document.addEventListener('click', event => this.onDocumentClick(event), { signal: uiListenerSignal });
         this.bga.notifications.setupPromiseNotifications();
+        if (gamedatas.scoringFinished) {
+            this.showCurrentScoring();
+        }
     }
 
     setupPlayerSlider() {
@@ -517,8 +521,9 @@ export class Game {
         });
         table.appendChild(body);
         wrapper.appendChild(table);
-        this.bga.dialogs.generic(_('Current scoring'), wrapper.outerHTML, {
-            id: 'bigtop-current-scoring',
+        const final = Boolean(this.gamedatas.scoringFinished);
+        this.bga.dialogs.generic(final ? _('Final scoring') : _('Current scoring'), wrapper.outerHTML, {
+            id: final ? 'bigtop-final-scoring' : 'bigtop-current-scoring',
             maxWidth: 1100,
         });
     }
@@ -1433,6 +1438,7 @@ export class Game {
     }
 
     notif_scoringFinalized(args) {
+        this.gamedatas.scoringFinished = true;
         this.updateScoring(args.scoring);
     }
 
