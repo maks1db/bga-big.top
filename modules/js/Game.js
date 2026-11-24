@@ -1466,6 +1466,12 @@ export class Game {
     notif_gameEndDrawn(args) {
         this.updateAuctioneer(args.player_id);
         document.getElementById('bigtop-deck-count').textContent = args.deckCount;
+        const movement = this.moveCard(args.card, 'bigtop-auction');
+        this.updateBid(0, null);
+        this.updateAuctionPasses([], false);
+        this.updateAuctionVisibility();
+        document.getElementById('bigtop-bid-controls').hidden = true;
+        return movement;
     }
 
     notif_effectCardDrawn(args) {

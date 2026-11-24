@@ -35,7 +35,9 @@ class StartAuction extends GameState
         $cardName = Game::CARD_TYPES[$card->type]['name'];
 
         if ($card->type === Game::TYPE_GAME_END) {
+            $this->game->cards->moveItem($card, 'auction');
             $this->notify->all('gameEndDrawn', clienttranslate('${player_name} draws the Game End card'), [
+                'card' => $card,
                 'player_id' => $activePlayerId,
                 'player_name' => $this->game->getPlayerNameById($activePlayerId),
                 'deckCount' => $deckCount,
