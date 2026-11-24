@@ -109,7 +109,8 @@ class Game extends \Bga\GameFramework\Table
         $result['attractions'] = $this->cards->getItemsInLocation('attraction')->values();
         $result['completed'] = $this->cards->getItemsInLocation('completed')->values();
         $result['auction'] = $this->cards->getItemsInLocation('auction')->values();
-        $result['scoring'] = $this->getScoring(true);
+        $scoringFinished = (bool)$this->globals->get('scoring_finished', false);
+        $result['scoring'] = $this->getScoring(!$scoringFinished);
 
         return $result;
     }

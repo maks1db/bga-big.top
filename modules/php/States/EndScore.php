@@ -17,6 +17,7 @@ class EndScore extends GameState
 
     public function onEnteringState(): int
     {
+        $this->bga->globals->set('scoring_finished', true);
         $scoring = $this->game->getScoring();
         $scores = $scoring['scores'];
         $starCounts = $scoring['starCounts'];
@@ -31,6 +32,10 @@ class EndScore extends GameState
                 ]);
             }
         }
+
+        $this->notify->all('scoringFinalized', '', [
+            'scoring' => $scoring,
+        ]);
 
         $this->notify->all('tableWindow', '', [
             'id' => 'finalScoring',

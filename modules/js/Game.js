@@ -1432,6 +1432,10 @@ export class Game {
         );
     }
 
+    notif_scoringFinalized(args) {
+        this.updateScoring(args.scoring);
+    }
+
     notif_moneyChanged(args) {
         const playerId = this.bga.players.getCurrentPlayerId();
         const value = Number(args.value);
