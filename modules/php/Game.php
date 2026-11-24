@@ -437,10 +437,9 @@ class Game extends \Bga\GameFramework\Table
         $totalRow = ['<div class="bigtop-final-score-total"><strong>' . clienttranslate('Total') . '</strong></div>'];
         foreach ($playerIds as $playerId) {
             $score = $scores[$playerId];
-            $total = $score['base'] + $score['clowns'] + $score['coins'] + $score['stars'];
-            if ($intermediate && $starCounts[$playerId] === 0) {
-                $total = 0;
-            }
+            $total = $starCounts[$playerId] === 0
+                ? 0
+                : $score['base'] + $score['clowns'] + $score['coins'] + $score['stars'];
             $scores[$playerId]['total'] = $total;
             $totalRow[] = '<div class="bigtop-final-score-total"><strong>' . $total . '</strong></div>';
         }
